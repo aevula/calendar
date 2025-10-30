@@ -12,5 +12,8 @@ log:
   plain: false
 
 db:
-  postgres_user: pguser
-  postgres_password: pgpassword
+  user: pguser
+  password: pgpassword
+  host: db
+  port: 5432
+  name: calendar_prod

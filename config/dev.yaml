@@ -12,5 +12,8 @@ log:
   plain: true
 
 db:
-  postgres_user: pguser
-  postgres_password: pgpassword
+  user: pguser
+  password: pgpassword
+  host: localhost
+  port: 5432
+  name: calendar_dev

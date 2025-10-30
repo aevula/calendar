@@ -19,6 +19,7 @@ type Config struct {
 	Env    string `yaml:"env"    env:"ENV"`
 	Server Server `yaml:"server"`
 	Log    Log    `yaml:"log"`
+	Db     Db     `yaml:"db"`
 }
 
 type Server struct {
@@ -32,6 +33,14 @@ type Log struct {
 	Level string `yaml:"level" env:"LOG_LEVEL"`
 	Trace bool   `yaml:"trace" env:"LOG_TRACE"`
 	Plain bool   `yaml:"plain" env:"LOG_PLAIN"`
+}
+
+type Db struct {
+	User     string `yaml:"user"     env:"DB_USER"`
+	Password string `yaml:"password" env:"DB_PASSWORD"`
+	Host     string `yaml:"host"     env:"DB_HOST"`
+	Port     int    `yaml:"port"     env:"DB_PORT"`
+	Name     string `yaml:"name"     env:"DB_NAME"`
 }
 
 func MustLoad() Config {
