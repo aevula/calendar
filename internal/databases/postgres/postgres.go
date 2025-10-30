@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/aevula/interview-hustlers-calendar/internal/application/config"
+	"github.com/aevula/interview-hustlers-calendar/internal/config"
 	"github.com/jackc/pgx/v5"
 )
 

@@ -3,7 +3,7 @@ package zap
 import (
 	"strings"
 
-	"github.com/aevula/interview-hustlers-calendar/internal/application/config"
+	"github.com/aevula/interview-hustlers-calendar/internal/config"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )

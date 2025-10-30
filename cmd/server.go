@@ -8,9 +8,9 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/aevula/interview-hustlers-calendar/internal/application/config"
-	logging "github.com/aevula/interview-hustlers-calendar/internal/application/log/zap"
-	"github.com/aevula/interview-hustlers-calendar/internal/db/postgres"
+	"github.com/aevula/interview-hustlers-calendar/internal/config"
+	"github.com/aevula/interview-hustlers-calendar/internal/databases/postgres"
+	logging "github.com/aevula/interview-hustlers-calendar/internal/logger/zap"
 )
 
 func main() {
