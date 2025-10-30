@@ -26,23 +26,20 @@ func main() {
 		zap.String("log_level", logger.Level().String()),
 	)
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	go watchSignals(ctx, cancel)
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
 
 	initCtx, initCancel := context.WithTimeout(ctx, cfg.InitTimeout)
+	defer initCancel()
 
 	db, err := postgres.New(initCtx, cfg)
 	if err != nil {
+		stop()
 		logger.Error(err.Error())
-		cancel()
+		return
 	}
 
-	initCancel()
-
 	logger.Info("Started")
-	defer logger.Info("Shut down")
 
 	go func() {
 		for { // server mock
@@ -52,23 +49,13 @@ func main() {
 
 	logger.Info("Shutting down ...")
 
-	shutCtx, shutCancel := context.WithTimeout(ctx, cfg.ShutTimeout)
+	shutCtx, shutCancel := context.WithTimeout(context.Background(), cfg.ShutTimeout)
+	defer shutCancel()
 
 	err = db.Close(shutCtx)
 	if err != nil {
 		logger.Error(err.Error())
 	}
 
-	shutCancel()
-}
-
-func watchSignals(ctx context.Context, cancel context.CancelFunc) {
-	exit := make(chan os.Signal, 1)
-	signal.Notify(exit, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
-	select {
-	case <-exit:
-		cancel()
-	case <-ctx.Done():
-		return
-	}
+	logger.Info("Shut down")
 }
