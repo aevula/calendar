@@ -39,7 +39,8 @@ func (app *App) Run(ctx context.Context) {
 	}
 }
 
-func (app *App) Shutdown(ctx context.Context) {
+func (app *App) Shutdown(ctx context.Context, done chan<- struct{}) {
+	defer close(done)
 	defer app.Logger.Sync()
 
 	app.logStoping()

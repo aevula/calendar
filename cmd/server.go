@@ -21,6 +21,11 @@ func main() {
 	ctx, close := context.WithTimeout(context.Background(), app.Cfg.ShutTimeout)
 	defer close()
 
-	go app.Shutdown(ctx)
-	<-ctx.Done()
+	done := make(chan struct{})
+
+	go app.Shutdown(ctx, done)
+	select {
+	case <-ctx.Done():
+	case <-done:
+	}
 }
