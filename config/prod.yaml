@@ -1,4 +1,6 @@
 env: "prod"
+init_timeout: 5s
+shut_timeout: 5s
 
 server:
   port: 3000

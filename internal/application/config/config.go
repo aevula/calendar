@@ -16,7 +16,10 @@ const (
 )
 
 type Config struct {
-	Env    string `yaml:"env"    env:"ENV"`
+	Env         string        `yaml:"env"          env:"ENV"`
+	InitTimeout time.Duration `yaml:"init_timeout" env:"SERVER_INIT_TIMEOUT"`
+	ShutTimeout time.Duration `yaml:"shut_timeout" env:"SERVER_SHUT_TIMEOUT"`
+
 	Server Server `yaml:"server"`
 	Log    Log    `yaml:"log"`
 	Db     Db     `yaml:"db"`
