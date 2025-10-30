@@ -58,14 +58,13 @@ func (app *App) initLogger(ctx context.Context) {
 	app.Logger = logging.MustLoad(app.Cfg)
 }
 
-func (app *App) initDb(ctx context.Context) error {
+func (app *App) initDb(ctx context.Context) {
 	db, err := postgres.New(ctx, app.Cfg)
 	if err != nil {
 		app.Logger.Fatal(err.Error())
 	}
 
 	app.Db = db
-	return nil
 }
 
 func (app *App) closeDb(ctx context.Context) {
