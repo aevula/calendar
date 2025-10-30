@@ -1,0 +1,16 @@
+env: "test"
+
+server:
+  port: 3000
+  idle_timeout: 0s
+  read_timeout: 0s
+  write_timeout: 0s
+
+log:
+  level: "info"
+  trace: false
+  plain: true
+
+db:
+  postgres_user: pguser
+  postgres_password: pgpassword

@@ -1,0 +1,16 @@
+env: "ci"
+
+server:
+  port: 3000
+  idle_timeout: 0s
+  read_timeout: 0s
+  write_timeout: 0s
+
+log:
+  level: "info"
+  trace: true
+  plain: false
+
+db:
+  postgres_user: pguser
+  postgres_password: pgpassword
