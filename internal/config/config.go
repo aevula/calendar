@@ -25,6 +25,22 @@ type Config struct {
 	Db     Db     `yaml:"db"`
 }
 
+func (cfg Config) IsDev() bool {
+	return cfg.Env == Dev
+}
+
+func (cfg Config) IsTest() bool {
+	return cfg.Env == Test
+}
+
+func (cfg Config) IsCI() bool {
+	return cfg.Env == CI
+}
+
+func (cfg Config) IsProd() bool {
+	return cfg.Env == Prod
+}
+
 type Server struct {
 	Port         int           `yaml:"port"          env:"SERVER_PORT"`
 	IdleTimeout  time.Duration `yaml:"idle_timeout"  env:"SERVER_IDLE_TIMEOUT"`
@@ -55,7 +71,7 @@ func MustLoad() Config {
 	}
 
 	if _, err := os.Stat(cfgPath); err != nil {
-		log.Fatalf("error loading config %v", err)
+		log.Fatalf("error loading config file %v", err)
 	}
 
 	err := cleanenv.ReadConfig(cfgPath, &cfg)

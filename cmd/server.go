@@ -6,56 +6,21 @@ import (
 	"os/signal"
 	"syscall"
 
-	"go.uber.org/zap"
-
-	"github.com/aevula/interview-hustlers-calendar/internal/config"
-	"github.com/aevula/interview-hustlers-calendar/internal/databases/postgres"
-	logging "github.com/aevula/interview-hustlers-calendar/internal/logger/zap"
+	"github.com/aevula/interview-hustlers-calendar/internal/application"
 )
 
 func main() {
-	cfg := config.MustLoad()
-
-	logger := logging.MustLoad(cfg)
-	defer logger.Sync()
-
-	logger.Info(
-		"Starting ...",
-		zap.Int("pid", os.Getpid()),
-		zap.String("env", cfg.Env),
-		zap.String("log_level", logger.Level().String()),
-	)
-
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
-	initCtx, initCancel := context.WithTimeout(ctx, cfg.InitTimeout)
-	defer initCancel()
+	app := application.New(ctx)
 
-	db, err := postgres.New(initCtx, cfg)
-	if err != nil {
-		stop()
-		logger.Error(err.Error())
-		return
-	}
-
-	logger.Info("Started")
-
-	go func() {
-		for { // server mock
-		}
-	}()
+	go app.Run(ctx)
 	<-ctx.Done()
 
-	logger.Info("Shutting down ...")
+	ctx, close := context.WithTimeout(context.Background(), app.Cfg.ShutTimeout)
+	defer close()
 
-	shutCtx, shutCancel := context.WithTimeout(context.Background(), cfg.ShutTimeout)
-	defer shutCancel()
-
-	err = db.Close(shutCtx)
-	if err != nil {
-		logger.Error(err.Error())
-	}
-
-	logger.Info("Shut down")
+	go app.Shutdown(ctx)
+	<-ctx.Done()
 }

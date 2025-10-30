@@ -1,4 +1,4 @@
-package zap
+package logging
 
 import (
 	"strings"
@@ -7,6 +7,10 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
+
+type Logger struct {
+	*zap.Logger
+}
 
 var toZapLevels = map[string]zapcore.Level{
 	"debug":  zapcore.DebugLevel,
@@ -18,12 +22,12 @@ var toZapLevels = map[string]zapcore.Level{
 	"fatal":  zapcore.FatalLevel,
 }
 
-const defaultLevel = zapcore.InfoLevel
+const DefaultLevel = zapcore.InfoLevel
 
-func MustLoad(cfg config.Config) *zap.Logger {
+func MustLoad(cfg config.Config) *Logger {
 	level, ok := toZapLevels[strings.ToLower(cfg.Log.Level)]
 	if !ok {
-		level = defaultLevel
+		level = DefaultLevel
 	}
 
 	encoding := "json"
@@ -32,7 +36,7 @@ func MustLoad(cfg config.Config) *zap.Logger {
 	}
 
 	encoderCfg := zap.NewProductionEncoderConfig()
-	if cfg.Env == config.Dev || cfg.Env == config.Test {
+	if cfg.IsDev() || cfg.IsTest() {
 		encoderCfg = zap.NewDevelopmentEncoderConfig()
 		encoderCfg.EncodeLevel = zapcore.CapitalColorLevelEncoder
 	}
@@ -44,7 +48,7 @@ func MustLoad(cfg config.Config) *zap.Logger {
 
 	logCfg := zap.Config{
 		Level:             zap.NewAtomicLevelAt(level),
-		Development:       cfg.Env == config.Dev,
+		Development:       cfg.IsDev(),
 		DisableStacktrace: !cfg.Log.Trace,
 		Sampling:          nil,
 		Encoding:          encoding,
@@ -55,5 +59,13 @@ func MustLoad(cfg config.Config) *zap.Logger {
 	}
 
 	logger := zap.Must(logCfg.Build())
-	return logger
+	return &Logger{Logger: logger}
+}
+
+func (l *Logger) Int(key string, val int) zap.Field {
+	return zap.Int(key, val)
+}
+
+func (l *Logger) String(key string, val string) zap.Field {
+	return zap.String(key, val)
 }
