@@ -3,6 +3,7 @@ module github.com/aevula/interview-hustlers-calendar
 go 1.25.1
 
 require (
+	github.com/go-chi/chi/v5 v5.2.3
 	github.com/ilyakaznacheev/cleanenv v1.5.0
 	github.com/jackc/pgx/v5 v5.7.6
 	go.uber.org/zap v1.27.0

@@ -2,6 +2,8 @@ package application
 
 import (
 	"context"
+	"fmt"
+	"net/http"
 	"os"
 
 	"github.com/aevula/interview-hustlers-calendar/internal/config"
@@ -14,6 +16,7 @@ type App struct {
 	Cfg    config.Config
 	Logger *logging.Logger
 	Db     databases.Db
+	Server *http.Server
 }
 
 func New(cfg config.Config) *App {
@@ -28,6 +31,7 @@ func (app *App) Init(ctx context.Context) {
 	app.logIniting()
 
 	app.initDb(initCtx)
+	app.initServer(initCtx)
 
 	app.logInited()
 }
@@ -36,8 +40,12 @@ func (app *App) Run(ctx context.Context) {
 	app.logStarting()
 	defer app.logStarted()
 
-	for {
-	}
+	go func() {
+		if err := app.Server.ListenAndServe(); err != nil {
+			app.Logger.Error(err.Error())
+			app.Logger.Sync()
+		}
+	}()
 }
 
 func (app *App) Shutdown(ctx context.Context) {
@@ -60,6 +68,19 @@ func (app *App) initDb(ctx context.Context) {
 	}
 
 	app.Db = databases.Db(pg)
+}
+
+func (app *App) initServer(ctx context.Context) {
+	router := newRouter()
+
+	app.Server = &http.Server{
+		Addr:         fmt.Sprintf(":%d", app.Cfg.Server.Port),
+		Handler:      router,
+		ReadTimeout:  app.Cfg.Server.ReadTimeout,
+		WriteTimeout: app.Cfg.Server.WriteTimeout,
+		IdleTimeout:  app.Cfg.Server.IdleTimeout,
+		// ErrorLog:     app.Logger,
+	}
 }
 
 func (app *App) closeDb(ctx context.Context) {
