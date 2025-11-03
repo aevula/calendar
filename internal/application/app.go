@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/aevula/interview-hustlers-calendar/internal/config"
+	"github.com/aevula/interview-hustlers-calendar/internal/databases"
 	"github.com/aevula/interview-hustlers-calendar/internal/databases/postgres"
 	"github.com/aevula/interview-hustlers-calendar/internal/logging"
 )
@@ -12,7 +13,7 @@ import (
 type App struct {
 	Cfg    config.Config
 	Logger *logging.Logger
-	Db     *postgres.Db
+	Db     databases.Db
 }
 
 func New(ctx context.Context) *App {
@@ -59,12 +60,12 @@ func (app *App) initLogger(ctx context.Context) {
 }
 
 func (app *App) initDb(ctx context.Context) {
-	db, err := postgres.New(ctx, app.Cfg)
+	pg, err := postgres.New(ctx, app.Cfg)
 	if err != nil {
 		app.Logger.Fatal(err.Error())
 	}
 
-	app.Db = db
+	app.Db = databases.Db(pg)
 }
 
 func (app *App) closeDb(ctx context.Context) {

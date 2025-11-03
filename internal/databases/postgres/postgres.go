@@ -9,12 +9,15 @@ import (
 )
 
 type Db struct {
-	*pgx.Conn
+	conn *pgx.Conn
 }
 
 func New(ctx context.Context, cfg config.Config) (*Db, error) {
 	con, err := pgx.Connect(ctx, connString(cfg))
-	return &Db{Conn: con}, err
+	if err != nil {
+		return nil, err
+	}
+	return &Db{conn: con}, nil
 }
 
 func connString(cfg config.Config) string {
@@ -26,4 +29,8 @@ func connString(cfg config.Config) string {
 		cfg.Db.Port,
 		cfg.Db.Name,
 	)
+}
+
+func (db *Db) Close(ctx context.Context) error {
+	return db.conn.Close(ctx)
 }
