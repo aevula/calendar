@@ -16,43 +16,37 @@ type App struct {
 	Db     databases.Db
 }
 
-func New(ctx context.Context) *App {
-	app := new(App)
-	app.initCfg()
+func New(cfg config.Config) *App {
+	return &App{Cfg: cfg}
+}
 
+func (app *App) Init(ctx context.Context) {
 	initCtx, cancel := context.WithTimeout(ctx, app.Cfg.InitTimeout)
 	defer cancel()
 
 	app.initLogger(initCtx)
-	app.logStarting()
+	app.logIniting()
 
 	app.initDb(initCtx)
 
-	app.logStarted()
-
-	return app
+	app.logInited()
 }
 
 func (app *App) Run(ctx context.Context) {
-	defer app.Logger.Sync()
+	app.logStarting()
+	defer app.logStarted()
 
 	for {
 	}
 }
 
-func (app *App) Shutdown(ctx context.Context, done chan<- struct{}) {
-	defer close(done)
+func (app *App) Shutdown(ctx context.Context) {
 	defer app.Logger.Sync()
 
 	app.logStoping()
+	defer app.logStoped()
 
 	app.closeDb(ctx)
-
-	app.logStoped()
-}
-
-func (app *App) initCfg() {
-	app.Cfg = config.MustLoad()
 }
 
 func (app *App) initLogger(ctx context.Context) {
@@ -75,7 +69,7 @@ func (app *App) closeDb(ctx context.Context) {
 	}
 }
 
-func (app *App) logStarting() {
+func (app *App) logIniting() {
 	app.Logger.Info(
 		"Starting ...",
 		app.Logger.Int("pid", os.Getpid()),
@@ -83,6 +77,10 @@ func (app *App) logStarting() {
 		app.Logger.String("log_level", app.Logger.Level().String()),
 	)
 }
+
+func (app *App) logInited() {}
+
+func (app *App) logStarting() {}
 
 func (app *App) logStarted() {
 	app.Logger.Info("Started")
