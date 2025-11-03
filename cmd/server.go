@@ -22,8 +22,8 @@ func main() {
 	app.Run(ctx)
 	<-ctx.Done()
 
-	ctx, cancel := context.WithTimeout(context.Background(), app.Cfg.ShutTimeout)
-	defer cancel()
+	ctx, stop = signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
 
 	app.Shutdown(ctx)
 }

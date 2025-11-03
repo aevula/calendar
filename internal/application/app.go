@@ -51,10 +51,14 @@ func (app *App) Run(ctx context.Context) {
 func (app *App) Shutdown(ctx context.Context) {
 	defer app.Logger.Sync()
 
+	shutCtx, cancel := context.WithTimeout(ctx, app.Cfg.ShutTimeout)
+	defer cancel()
+
 	app.logStoping()
 	defer app.logStoped()
 
-	app.closeDb(ctx)
+	app.closeDb(shutCtx)
+	app.closeServer(shutCtx)
 }
 
 func (app *App) initLogger(ctx context.Context) {
@@ -85,6 +89,13 @@ func (app *App) initServer(ctx context.Context) {
 
 func (app *App) closeDb(ctx context.Context) {
 	err := app.Db.Close(ctx)
+	if err != nil {
+		app.Logger.Error(err.Error())
+	}
+}
+
+func (app *App) closeServer(ctx context.Context) {
+	err := app.Server.Shutdown(ctx)
 	if err != nil {
 		app.Logger.Error(err.Error())
 	}
