@@ -23,5 +23,11 @@ go.work.sum
 
 # env file
 .env
+
+# IDE
 .idea/
 .vscode/
+
+# Tools
+tools/bin/*
+tools/src/*
