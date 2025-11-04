@@ -36,16 +36,22 @@ func (app *App) Init(ctx context.Context) {
 	app.logInited()
 }
 
-func (app *App) Run(ctx context.Context) {
+func (app *App) Run(ctx context.Context) <-chan struct{} {
 	app.logStarting()
-	defer app.logStarted()
+	errCh := make(chan struct{})
 
 	go func() {
-		if err := app.Server.ListenAndServe(); err != nil {
+		defer close(errCh)
+
+		app.logStarted()
+		app.Logger.Sync()
+
+		if err := app.Server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			app.Logger.Error(err.Error())
-			app.Logger.Sync()
 		}
 	}()
+
+	return errCh
 }
 
 func (app *App) Shutdown(ctx context.Context) {
@@ -115,7 +121,7 @@ func (app *App) logInited() {}
 func (app *App) logStarting() {}
 
 func (app *App) logStarted() {
-	app.Logger.Info("Started")
+	app.Logger.Info("Started", app.Logger.String("addr", app.Server.Addr))
 }
 
 func (app *App) logStoping() {

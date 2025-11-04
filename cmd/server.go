@@ -19,8 +19,10 @@ func main() {
 	app := application.New(cfg)
 	app.Init(ctx)
 
-	app.Run(ctx)
-	<-ctx.Done()
+	select {
+	case <-app.Run(ctx):
+	case <-ctx.Done():
+	}
 
 	ctx, stop = signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
