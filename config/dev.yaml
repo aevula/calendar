@@ -16,6 +16,6 @@ log:
 db:
   user: pguser
   password: pgpassword
-  host: localhost
+  host: db
   port: 5432
   name: calendar_dev

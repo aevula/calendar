@@ -19,8 +19,8 @@ services:
     command: go run --race ./cmd/server.go
     volumes:
       - ./:/opt/app/
-    env_file:
-      - .env
+    environment:
+      - CONFIG_PATH=./config/dev.yaml
     
   db:
     image: postgres:18.0-alpine3.22
