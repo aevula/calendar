@@ -15,13 +15,13 @@ services:
   app:
     <<: *prod
     build:
-      target: dev_builder
+      target: dev
     command: go run --race ./cmd/server.go
     volumes:
-      - ./:/opt/app/
+      - ./:/usr/src/
     environment:
       - CONFIG_PATH=./config/dev.yaml
-    
+
   db:
     image: postgres:18.0-alpine3.22
     environment:
