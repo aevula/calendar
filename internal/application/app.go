@@ -7,24 +7,37 @@ import (
 	"os"
 
 	"github.com/aevula/interview-hustlers-calendar/internal/config"
+	controllers "github.com/aevula/interview-hustlers-calendar/internal/controllers/http"
 	"github.com/aevula/interview-hustlers-calendar/internal/databases"
 	"github.com/aevula/interview-hustlers-calendar/internal/databases/postgres"
 	"github.com/aevula/interview-hustlers-calendar/internal/logging"
 )
 
 type App struct {
-	Cfg    config.Config
-	Logger *logging.Logger
-	Db     databases.Db
+	cfg    config.Config
+	logger *logging.Logger
+	db     databases.Db
 	Server *http.Server
 }
 
 func New(cfg config.Config) *App {
-	return &App{Cfg: cfg}
+	return &App{cfg: cfg}
+}
+
+func (app *App) Config() config.Config {
+	return app.cfg
+}
+
+func (app *App) Logger() *logging.Logger {
+	return app.logger
+}
+
+func (app *App) Db() databases.Db {
+	return app.db
 }
 
 func (app *App) Init(ctx context.Context) {
-	initCtx, cancel := context.WithTimeout(ctx, app.Cfg.InitTimeout)
+	initCtx, cancel := context.WithTimeout(ctx, app.cfg.InitTimeout)
 	defer cancel()
 
 	app.initLogger(initCtx)
@@ -44,10 +57,10 @@ func (app *App) Run(ctx context.Context) <-chan struct{} {
 		defer close(errCh)
 
 		app.logStarted()
-		app.Logger.Sync()
+		app.logger.Sync()
 
 		if err := app.Server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			app.Logger.Error(err.Error())
+			app.logger.Error(err.Error())
 		}
 	}()
 
@@ -55,9 +68,9 @@ func (app *App) Run(ctx context.Context) <-chan struct{} {
 }
 
 func (app *App) Shutdown(ctx context.Context) {
-	defer app.Logger.Sync()
+	defer app.logger.Sync()
 
-	shutCtx, cancel := context.WithTimeout(ctx, app.Cfg.ShutTimeout)
+	shutCtx, cancel := context.WithTimeout(ctx, app.cfg.ShutTimeout)
 	defer cancel()
 
 	app.logStoping()
@@ -68,51 +81,51 @@ func (app *App) Shutdown(ctx context.Context) {
 }
 
 func (app *App) initLogger(ctx context.Context) {
-	app.Logger = logging.MustLoad(app.Cfg)
+	app.logger = logging.MustLoad(app.cfg)
 }
 
 func (app *App) initDb(ctx context.Context) {
-	pg, err := postgres.New(ctx, app.Cfg)
+	db, err := postgres.New(ctx, app.cfg)
 	if err != nil {
-		app.Logger.Fatal(err.Error())
+		app.logger.Fatal(err.Error())
 	}
 
-	app.Db = databases.Db(pg)
+	app.db = db
 }
 
 func (app *App) initServer(ctx context.Context) {
-	router := newRouter()
+	router := controllers.NewRouter(app)
 
 	app.Server = &http.Server{
-		Addr:         fmt.Sprintf(":%d", app.Cfg.Server.Port),
+		Addr:         fmt.Sprintf(":%d", app.cfg.Server.Port),
 		Handler:      router,
-		ReadTimeout:  app.Cfg.Server.ReadTimeout,
-		WriteTimeout: app.Cfg.Server.WriteTimeout,
-		IdleTimeout:  app.Cfg.Server.IdleTimeout,
-		// ErrorLog:     app.Logger,
+		ReadTimeout:  app.cfg.Server.ReadTimeout,
+		WriteTimeout: app.cfg.Server.WriteTimeout,
+		IdleTimeout:  app.cfg.Server.IdleTimeout,
+		// ErrorLog:     app.logger,
 	}
 }
 
 func (app *App) closeDb(ctx context.Context) {
-	err := app.Db.Close(ctx)
+	err := app.db.Close(ctx)
 	if err != nil {
-		app.Logger.Error(err.Error())
+		app.logger.Error(err.Error())
 	}
 }
 
 func (app *App) closeServer(ctx context.Context) {
 	err := app.Server.Shutdown(ctx)
 	if err != nil {
-		app.Logger.Error(err.Error())
+		app.logger.Error(err.Error())
 	}
 }
 
 func (app *App) logIniting() {
-	app.Logger.Info(
+	app.logger.Info(
 		"Starting ...",
-		app.Logger.Int("pid", os.Getpid()),
-		app.Logger.String("env", app.Cfg.Env),
-		app.Logger.String("log_level", app.Logger.Level().String()),
+		app.logger.Int("pid", os.Getpid()),
+		app.logger.String("env", app.cfg.Env),
+		app.logger.String("log_level", app.logger.Level().String()),
 	)
 }
 
@@ -121,13 +134,13 @@ func (app *App) logInited() {}
 func (app *App) logStarting() {}
 
 func (app *App) logStarted() {
-	app.Logger.Info("Started", app.Logger.String("addr", app.Server.Addr))
+	app.logger.Info("Started", app.logger.String("addr", app.Server.Addr))
 }
 
 func (app *App) logStoping() {
-	app.Logger.Info("Shutting down ...")
+	app.logger.Info("Shutting down ...")
 }
 
 func (app *App) logStoped() {
-	app.Logger.Info("Shut down")
+	app.logger.Info("Shut down")
 }
