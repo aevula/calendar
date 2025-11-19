@@ -2,89 +2,95 @@ package application
 
 import (
 	"context"
-	"fmt"
-	"net/http"
-	"os"
 
 	"github.com/aevula/interview-hustlers-calendar/internal/config"
-	controllers "github.com/aevula/interview-hustlers-calendar/internal/controllers/http"
 	"github.com/aevula/interview-hustlers-calendar/internal/databases"
 	"github.com/aevula/interview-hustlers-calendar/internal/databases/postgres"
 	"github.com/aevula/interview-hustlers-calendar/internal/logging"
+	"github.com/aevula/interview-hustlers-calendar/internal/repository"
+	"github.com/aevula/interview-hustlers-calendar/internal/services/events"
+	"github.com/aevula/interview-hustlers-calendar/internal/services/users"
 )
 
-type App struct {
+type BaseApp interface {
+	Init(ctx context.Context)
+	Stop(ctx context.Context)
+
+	Cfg() config.Config
+	Logger() logging.Logger
+	Db() databases.Db
+
+	UsersRepo() repository.UserRepository
+	EventsRepo() repository.EventRepository
+
+	UsersService() users.UsersService
+	EventsService() events.EventsService
+}
+
+type app struct {
 	cfg    config.Config
-	logger *logging.Logger
+	logger logging.Logger
 	db     databases.Db
-	Server *http.Server
+
+	usersRepo  repository.UserRepository
+	eventsRepo repository.EventRepository
+
+	usersService  users.UsersService
+	eventsService events.EventsService
 }
 
-func New(cfg config.Config) *App {
-	return &App{cfg: cfg}
+func new(cfg config.Config) BaseApp {
+	return &app{cfg: cfg}
 }
 
-func (app *App) Config() config.Config {
+func (app *app) Init(ctx context.Context) {
+	app.initLogger()
+
+	app.initDb(ctx)
+
+	app.initRepos()
+	app.initServices()
+}
+
+func (app *app) Stop(ctx context.Context) {
+	defer app.logger.Sync()
+
+	app.closeDb(ctx)
+}
+
+func (app *app) Cfg() config.Config {
 	return app.cfg
 }
 
-func (app *App) Logger() *logging.Logger {
+func (app *app) Logger() logging.Logger {
 	return app.logger
 }
 
-func (app *App) Db() databases.Db {
+func (app *app) Db() databases.Db {
 	return app.db
 }
 
-func (app *App) Init(ctx context.Context) {
-	initCtx, cancel := context.WithTimeout(ctx, app.cfg.InitTimeout)
-	defer cancel()
-
-	app.initLogger(initCtx)
-	app.logIniting()
-
-	app.initDb(initCtx)
-	app.initServer(initCtx)
-
-	app.logInited()
+func (app *app) UsersRepo() repository.UserRepository {
+	return app.usersRepo
 }
 
-func (app *App) Run(ctx context.Context) <-chan struct{} {
-	app.logStarting()
-	errCh := make(chan struct{})
-
-	go func() {
-		defer close(errCh)
-
-		app.logStarted()
-		app.logger.Sync()
-
-		if err := app.Server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			app.logger.Error(err.Error())
-		}
-	}()
-
-	return errCh
+func (app *app) EventsRepo() repository.EventRepository {
+	return app.eventsRepo
 }
 
-func (app *App) Shutdown(ctx context.Context) {
-	defer app.logger.Sync()
-
-	shutCtx, cancel := context.WithTimeout(ctx, app.cfg.ShutTimeout)
-	defer cancel()
-
-	app.logStoping()
-	defer app.logStoped()
-
-	app.closeDb(shutCtx)
-	app.closeServer(shutCtx)
+func (app *app) UsersService() users.UsersService {
+	return app.usersService
 }
 
-func (app *App) initLogger(ctx context.Context) {
+func (app *app) EventsService() events.EventsService {
+	return app.eventsService
+}
+
+func (app *app) initLogger() {
 	app.logger = logging.MustLoad(app.cfg)
 }
 
-func (app *App) initDb(ctx context.Context) {
+func (app *app) initDb(ctx context.Context) {
 	db, err := postgres.New(ctx, app.cfg)
 	if err != nil {
 		app.logger.Fatal(err.Error())
@@ -93,54 +99,19 @@ func (app *App) initDb(ctx context.Context) {
 	app.db = db
 }
 
-func (app *App) initServer(ctx context.Context) {
-	router := controllers.NewRouter(app)
-
-	app.Server = &http.Server{
-		Addr:         fmt.Sprintf(":%d", app.cfg.Server.Port),
-		Handler:      router,
-		ReadTimeout:  app.cfg.Server.ReadTimeout,
-		WriteTimeout: app.cfg.Server.WriteTimeout,
-		IdleTimeout:  app.cfg.Server.IdleTimeout,
-		// ErrorLog:     app.logger,
-	}
+func (app *app) initRepos() {
+	app.usersRepo = repository.NewUserRepository(app.db)
+	app.eventsRepo = repository.NewEventRepository(app.db)
 }
 
-func (app *App) closeDb(ctx context.Context) {
+func (app *app) initServices() {
+	app.usersService = users.NewUsersService(app.usersRepo)
+	app.eventsService = events.NewEventsService(app.eventsRepo)
+}
+
+func (app *app) closeDb(ctx context.Context) {
 	err := app.db.Close(ctx)
 	if err != nil {
 		app.logger.Error(err.Error())
 	}
-}
-
-func (app *App) closeServer(ctx context.Context) {
-	err := app.Server.Shutdown(ctx)
-	if err != nil {
-		app.logger.Error(err.Error())
-	}
-}
-
-func (app *App) logIniting() {
-	app.logger.Info(
-		"Starting ...",
-		app.logger.Int("pid", os.Getpid()),
-		app.logger.String("env", app.cfg.Env),
-		app.logger.String("log_level", app.logger.Level().String()),
-	)
-}
-
-func (app *App) logInited() {}
-
-func (app *App) logStarting() {}
-
-func (app *App) logStarted() {
-	app.logger.Info("Started", app.logger.String("addr", app.Server.Addr))
-}
-
-func (app *App) logStoping() {
-	app.logger.Info("Shutting down ...")
-}
-
-func (app *App) logStoped() {
-	app.logger.Info("Shut down")
 }

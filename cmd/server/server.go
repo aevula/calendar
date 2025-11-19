@@ -16,7 +16,7 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
-	app := application.New(cfg)
+	app := application.NewServer(cfg)
 	app.Init(ctx)
 
 	select {
@@ -27,5 +27,5 @@ func main() {
 	ctx, stop = signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
-	app.Shutdown(ctx)
+	app.Stop(ctx)
 }

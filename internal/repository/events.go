@@ -23,8 +23,8 @@ type Event struct {
 type EventRepository interface {
 	Create(ctx context.Context, event Event) (Event, error)
 	Update(ctx context.Context, event Event) (Event, error)
-	Delete(ctx context.Context, event Event) error
-	List(ctx context.Context) ([]Event, error)
+	Delete(ctx context.Context, id int) error
+	All(ctx context.Context) ([]Event, error)
 }
 
 type eventRepository struct {
@@ -123,27 +123,23 @@ RETURNING
 	id
 `
 
-func (r *eventRepository) Delete(ctx context.Context, event Event) error {
-	row, err := r.db.QueryRow(ctx, eventDeleteSQL,
-		event.ID,
-	)
+func (r *eventRepository) Delete(ctx context.Context, id int) error {
+	row, err := r.db.QueryRow(ctx, eventDeleteSQL, id)
 	if err != nil {
 		return err
 	}
 
-	var id int
 	err = row.Scan(&id)
-
 	return err
 }
 
-const eventListSQL = `
+const eventAllSQL = `
 SELECT (
 	id, title, description, user_id, start_at, duration, notify_offset, notified_at, created_at, updated_at
 ) FROM events`
 
-func (r *eventRepository) List(ctx context.Context) ([]Event, error) {
-	rows, err := r.db.Query(ctx, eventListSQL)
+func (r *eventRepository) All(ctx context.Context) ([]Event, error) {
+	rows, err := r.db.Query(ctx, eventAllSQL)
 	if err != nil {
 		return nil, err
 	}

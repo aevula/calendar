@@ -8,7 +8,28 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-type Logger struct {
+type LogLevel = zapcore.Level
+type LogTag = zap.Field
+
+type Logger interface {
+	Debug(msg string, fields ...LogTag)
+	Info(msg string, fields ...LogTag)
+	Warn(msg string, fields ...LogTag)
+	Error(msg string, fields ...LogTag)
+	DPanic(msg string, fields ...LogTag)
+	Panic(msg string, fields ...LogTag)
+	Fatal(msg string, fields ...LogTag)
+
+	Sync() error
+	Level() LogLevel
+	With(fields ...LogTag) Logger
+
+	Int(key string, val int) LogTag
+	String(key string, val string) LogTag
+	Bool(key string, val bool) LogTag
+}
+
+type logger struct {
 	*zap.Logger
 }
 
@@ -24,7 +45,7 @@ var toZapLevels = map[string]zapcore.Level{
 
 const DefaultLevel = zapcore.InfoLevel
 
-func MustLoad(cfg config.Config) *Logger {
+func MustLoad(cfg config.Config) Logger {
 	level, ok := toZapLevels[strings.ToLower(cfg.Log.Level)]
 	if !ok {
 		level = DefaultLevel
@@ -58,14 +79,22 @@ func MustLoad(cfg config.Config) *Logger {
 		InitialFields:     initialFields,
 	}
 
-	logger := zap.Must(logCfg.Build())
-	return &Logger{Logger: logger}
+	zapLogger := zap.Must(logCfg.Build())
+	return &logger{Logger: zapLogger}
 }
 
-func (l *Logger) Int(key string, val int) zap.Field {
+func (l *logger) With(fields ...LogTag) Logger {
+	return &logger{l.Logger.With(fields...)}
+}
+
+func (l *logger) Int(key string, val int) LogTag {
 	return zap.Int(key, val)
 }
 
-func (l *Logger) String(key string, val string) zap.Field {
+func (l *logger) String(key string, val string) LogTag {
 	return zap.String(key, val)
+}
+
+func (l *logger) Bool(key string, val bool) LogTag {
+	return zap.Bool(key, val)
 }
