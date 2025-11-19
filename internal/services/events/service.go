@@ -3,14 +3,14 @@ package events
 import (
 	"context"
 
-	"github.com/aevula/interview-hustlers-calendar/internal/repository"
+	domain "github.com/aevula/interview-hustlers-calendar/internal/domain/events"
 )
 
 type EventsService interface {
-	Create(ctx context.Context, cmd CreateEventCommand) (repository.Event, error)
-	Update(ctx context.Context, cmd UpdateEventCommand) (repository.Event, error)
+	Create(ctx context.Context, cmd CreateEventCommand) (domain.Event, error)
+	Update(ctx context.Context, cmd UpdateEventCommand) (domain.Event, error)
 	Delete(ctx context.Context, cmd DeleteEventCommand) error
-	All(ctx context.Context) ([]repository.Event, error)
+	All(ctx context.Context) ([]domain.Event, error)
 }
 
 type eventsService struct {
@@ -18,10 +18,10 @@ type eventsService struct {
 }
 
 type EventRepository interface {
-	Create(ctx context.Context, event repository.Event) (repository.Event, error)
-	Update(ctx context.Context, event repository.Event) (repository.Event, error)
+	Create(ctx context.Context, event domain.Event) (domain.Event, error)
+	Update(ctx context.Context, event domain.Event) (domain.Event, error)
 	Delete(ctx context.Context, id int) error
-	All(ctx context.Context) ([]repository.Event, error)
+	All(ctx context.Context) ([]domain.Event, error)
 }
 
 func NewEventsService(repo EventRepository) EventsService {

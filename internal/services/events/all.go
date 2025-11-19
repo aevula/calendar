@@ -3,9 +3,9 @@ package events
 import (
 	"context"
 
-	"github.com/aevula/interview-hustlers-calendar/internal/repository"
+	domain "github.com/aevula/interview-hustlers-calendar/internal/domain/events"
 )
 
-func (s *eventsService) All(ctx context.Context) ([]repository.Event, error) {
+func (s *eventsService) All(ctx context.Context) ([]domain.Event, error) {
 	return s.repo.All(ctx)
 }

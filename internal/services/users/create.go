@@ -3,7 +3,7 @@ package users
 import (
 	"context"
 
-	"github.com/aevula/interview-hustlers-calendar/internal/repository"
+	domain "github.com/aevula/interview-hustlers-calendar/internal/domain/users"
 )
 
 type CreateUserCommand struct {
@@ -11,8 +11,8 @@ type CreateUserCommand struct {
 	Name  string
 }
 
-func (s *usersService) Create(ctx context.Context, cmd CreateUserCommand) (repository.User, error) {
-	user := repository.User{
+func (s *usersService) Create(ctx context.Context, cmd CreateUserCommand) (domain.User, error) {
+	user := domain.User{
 		Login: cmd.Login,
 		Name:  cmd.Name,
 	}

@@ -2,21 +2,14 @@ package repository
 
 import (
 	"context"
-	"time"
 
 	"github.com/aevula/interview-hustlers-calendar/internal/databases"
+	domain "github.com/aevula/interview-hustlers-calendar/internal/domain/users"
+	repo "github.com/aevula/interview-hustlers-calendar/internal/repository/users"
 )
 
-type User struct {
-	ID        int
-	Login     string
-	Name      string
-	CreatedAt time.Time
-	UpdatedAt time.Time
-}
-
 type UserRepository interface {
-	Create(context.Context, User) (User, error)
+	Create(context.Context, domain.User) (domain.User, error)
 }
 
 type userRepository struct {
@@ -37,25 +30,26 @@ RETURNING
 	id, login, name, created_at, updated_at
 `
 
-func (r *userRepository) Create(ctx context.Context, user User) (User, error) {
-	empty := User{}
+func (r *userRepository) Create(ctx context.Context, user domain.User) (domain.User, error) {
+	rUser := repo.FromDomain(user)
+	zero := repo.User{}
 
 	row, err := r.db.QueryRow(ctx, userCreateSQL,
-		user.Login,
-		user.Name,
+		rUser.Login,
+		rUser.Name,
 	)
 
 	if err != nil {
-		return empty, err
+		return zero.ToDomain(), err
 	}
 
 	err = row.Scan(
-		&empty.ID,
-		&empty.Login,
-		&empty.Name,
-		&empty.CreatedAt,
-		&empty.UpdatedAt,
+		&zero.ID,
+		&zero.Login,
+		&zero.Name,
+		&zero.CreatedAt,
+		&zero.UpdatedAt,
 	)
 
-	return empty, err
+	return zero.ToDomain(), err
 }

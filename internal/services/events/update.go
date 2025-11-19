@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/aevula/interview-hustlers-calendar/internal/repository"
+	domain "github.com/aevula/interview-hustlers-calendar/internal/domain/events"
 )
 
 type UpdateEventCommand struct {
@@ -16,8 +16,8 @@ type UpdateEventCommand struct {
 	NotifyAt    time.Time
 }
 
-func (s *eventsService) Update(ctx context.Context, cmd UpdateEventCommand) (repository.Event, error) {
-	event := repository.Event{
+func (s *eventsService) Update(ctx context.Context, cmd UpdateEventCommand) (domain.Event, error) {
+	event := domain.Event{
 		ID:          cmd.ID,
 		Title:       cmd.Title,
 		Description: cmd.Description,
@@ -25,5 +25,8 @@ func (s *eventsService) Update(ctx context.Context, cmd UpdateEventCommand) (rep
 		Duration:    cmd.Duration,
 		NotifyAt:    cmd.NotifyAt,
 	}
+
+	event.EnsureNotifyAt()
+
 	return s.repo.Update(ctx, event)
 }

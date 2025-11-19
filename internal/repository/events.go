@@ -5,27 +5,16 @@ import (
 	"time"
 
 	"github.com/aevula/interview-hustlers-calendar/internal/databases"
+	domain "github.com/aevula/interview-hustlers-calendar/internal/domain/events"
+	repo "github.com/aevula/interview-hustlers-calendar/internal/repository/events"
 )
 
-type Event struct {
-	ID          int
-	Title       string
-	Description string
-	UserId      int
-	StartAt     time.Time
-	Duration    time.Duration
-	NotifyAt    time.Time
-	NotifiedAt  time.Time
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
-}
-
 type EventRepository interface {
-	Create(ctx context.Context, event Event) (Event, error)
-	Update(ctx context.Context, event Event) (Event, error)
+	Create(ctx context.Context, event domain.Event) (domain.Event, error)
+	Update(ctx context.Context, event domain.Event) (domain.Event, error)
 	Delete(ctx context.Context, id int) error
-	All(ctx context.Context) ([]Event, error)
-	AllNotifyable(ctx context.Context, from time.Time) ([]Event, error)
+	All(ctx context.Context) ([]domain.Event, error)
+	AllNotifyable(ctx context.Context, from time.Time) ([]domain.Event, error)
 }
 
 type eventRepository struct {
@@ -45,34 +34,35 @@ INSERT INTO events (
 	id, title, description, user_id, start_at, duration, notify_at, notified_at, created_at, updated_at
 `
 
-func (r *eventRepository) Create(ctx context.Context, event Event) (Event, error) {
-	ev := Event{}
+func (r *eventRepository) Create(ctx context.Context, event domain.Event) (domain.Event, error) {
+	rEvent := repo.FromDomain(event)
+	zero := repo.Event{}
 
 	row, err := r.db.QueryRow(ctx, eventCreateSQL,
-		event.Title,
-		event.Description,
-		event.UserId,
-		event.StartAt,
-		event.Duration,
-		event.NotifyAt,
+		rEvent.Title,
+		rEvent.Description,
+		rEvent.UserId,
+		rEvent.StartAt,
+		rEvent.Duration,
+		rEvent.NotifyAt,
 	)
 	if err != nil {
-		return ev, err
+		return zero.ToDomain(), err
 	}
 
 	err = row.Scan(
-		&ev.ID,
-		&ev.Title,
-		&ev.Description,
-		&ev.UserId,
-		&ev.StartAt,
-		&ev.Duration,
-		&ev.NotifyAt,
-		&ev.NotifiedAt,
-		&ev.CreatedAt,
-		&ev.UpdatedAt,
+		&zero.ID,
+		&zero.Title,
+		&zero.Description,
+		&zero.UserId,
+		&zero.StartAt,
+		&zero.Duration,
+		&zero.NotifyAt,
+		&zero.NotifiedAt,
+		&zero.CreatedAt,
+		&zero.UpdatedAt,
 	)
-	return ev, err
+	return zero.ToDomain(), err
 }
 
 const eventUpdateSQL = `
@@ -84,36 +74,37 @@ RETURNING
 	id, title, description, user_id, start_at, duration, notify_at, notified_at, created_at, updated_at
 `
 
-func (r *eventRepository) Update(ctx context.Context, event Event) (Event, error) {
-	ev := Event{}
+func (r *eventRepository) Update(ctx context.Context, event domain.Event) (domain.Event, error) {
+	rEvent := repo.FromDomain(event)
+	zero := repo.Event{}
 
 	row, err := r.db.QueryRow(ctx, eventUpdateSQL,
-		event.ID,
-		event.Title,
-		event.Description,
-		event.UserId,
-		event.StartAt,
-		event.Duration,
-		event.NotifyAt,
-		event.NotifiedAt,
+		rEvent.ID,
+		rEvent.Title,
+		rEvent.Description,
+		rEvent.UserId,
+		rEvent.StartAt,
+		rEvent.Duration,
+		rEvent.NotifyAt,
+		rEvent.NotifiedAt,
 	)
 	if err != nil {
-		return ev, err
+		return zero.ToDomain(), err
 	}
 
 	err = row.Scan(
-		&ev.ID,
-		&ev.Title,
-		&ev.Description,
-		&ev.UserId,
-		&ev.StartAt,
-		&ev.Duration,
-		&ev.NotifyAt,
-		&ev.NotifiedAt,
-		&ev.CreatedAt,
-		&ev.UpdatedAt,
+		&zero.ID,
+		&zero.Title,
+		&zero.Description,
+		&zero.UserId,
+		&zero.StartAt,
+		&zero.Duration,
+		&zero.NotifyAt,
+		&zero.NotifiedAt,
+		&zero.CreatedAt,
+		&zero.UpdatedAt,
 	)
-	return ev, err
+	return zero.ToDomain(), err
 }
 
 const eventDeleteSQL = `
@@ -139,19 +130,19 @@ SELECT (
 	id, title, description, user_id, start_at, duration, notify_at, notified_at, created_at, updated_at
 ) FROM events`
 
-func (r *eventRepository) All(ctx context.Context) ([]Event, error) {
+func (r *eventRepository) All(ctx context.Context) ([]domain.Event, error) {
 	rows, err := r.db.Query(ctx, eventAllSQL)
 	if err != nil {
 		return nil, err
 	}
 
-	events := make([]Event, 0)
+	events := make([]domain.Event, 0)
 	for rows.Next() {
 		if err := rows.Err(); err != nil {
 			return nil, err
 		}
 
-		event := Event{}
+		event := repo.Event{}
 		err = rows.Scan(
 			&event.ID,
 			&event.Title,
@@ -168,7 +159,7 @@ func (r *eventRepository) All(ctx context.Context) ([]Event, error) {
 			return nil, err
 		}
 
-		events = append(events, event)
+		events = append(events, event.ToDomain())
 	}
 
 	return events, nil
@@ -181,19 +172,19 @@ SELECT (
 WHERE notify_at <= $1
 `
 
-func (r *eventRepository) AllNotifyable(ctx context.Context, from time.Time) ([]Event, error) {
+func (r *eventRepository) AllNotifyable(ctx context.Context, from time.Time) ([]domain.Event, error) {
 	rows, err := r.db.Query(ctx, eventNotifyableSQL, from)
 	if err != nil {
 		return nil, err
 	}
 
-	events := make([]Event, 0)
+	events := make([]domain.Event, 0)
 	for rows.Next() {
 		if err := rows.Err(); err != nil {
 			return nil, err
 		}
 
-		event := Event{}
+		event := repo.Event{}
 		err = rows.Scan(
 			&event.ID,
 			&event.Title,
@@ -206,7 +197,7 @@ func (r *eventRepository) AllNotifyable(ctx context.Context, from time.Time) ([]
 			return nil, err
 		}
 
-		events = append(events, event)
+		events = append(events, event.ToDomain())
 	}
 
 	return events, nil

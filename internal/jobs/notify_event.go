@@ -5,8 +5,8 @@ import (
 	"sync"
 	"time"
 
+	domain "github.com/aevula/interview-hustlers-calendar/internal/domain/events"
 	"github.com/aevula/interview-hustlers-calendar/internal/logging"
-	"github.com/aevula/interview-hustlers-calendar/internal/repository"
 )
 
 type notifyEvent struct {
@@ -15,8 +15,8 @@ type notifyEvent struct {
 }
 
 type EventRepository interface {
-	Update(ctx context.Context, event repository.Event) (repository.Event, error)
-	AllNotifyable(ctx context.Context, from time.Time) ([]repository.Event, error)
+	Update(ctx context.Context, event domain.Event) (domain.Event, error)
+	AllNotifyable(ctx context.Context, from time.Time) ([]domain.Event, error)
 }
 
 func NewNotifyEvent(eventsRepo EventRepository, logger logging.Logger) Job {
