@@ -11,6 +11,8 @@ import (
 	"github.com/aevula/interview-hustlers-calendar/internal/controllers/http/handlers"
 	"github.com/aevula/interview-hustlers-calendar/internal/controllers/http/users"
 	"github.com/aevula/interview-hustlers-calendar/internal/logging"
+	eventsService "github.com/aevula/interview-hustlers-calendar/internal/services/events"
+	usersService "github.com/aevula/interview-hustlers-calendar/internal/services/users"
 )
 
 type Server interface {
@@ -75,8 +77,11 @@ func (server *server) Stop(ctx context.Context) {
 }
 
 func (server *server) initControllers() {
-	server.UsersController = users.NewUsersController(server.app.UsersService(), server.logger)
-	server.EventsController = events.NewEventsController(server.app.EventsService(), server.logger)
+	usersService := usersService.NewUsersService(server.app.UsersRepo())
+	eventsService := eventsService.NewEventsService(server.app.EventsRepo())
+
+	server.UsersController = users.NewUsersController(usersService, server.logger)
+	server.EventsController = events.NewEventsController(eventsService, server.logger)
 }
 
 func (server *server) initServer() {

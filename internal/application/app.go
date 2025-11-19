@@ -8,8 +8,6 @@ import (
 	"github.com/aevula/interview-hustlers-calendar/internal/databases/postgres"
 	"github.com/aevula/interview-hustlers-calendar/internal/logging"
 	"github.com/aevula/interview-hustlers-calendar/internal/repository"
-	"github.com/aevula/interview-hustlers-calendar/internal/services/events"
-	"github.com/aevula/interview-hustlers-calendar/internal/services/users"
 )
 
 type BaseApp interface {
@@ -22,9 +20,6 @@ type BaseApp interface {
 
 	UsersRepo() repository.UserRepository
 	EventsRepo() repository.EventRepository
-
-	UsersService() users.UsersService
-	EventsService() events.EventsService
 }
 
 type app struct {
@@ -34,9 +29,6 @@ type app struct {
 
 	usersRepo  repository.UserRepository
 	eventsRepo repository.EventRepository
-
-	usersService  users.UsersService
-	eventsService events.EventsService
 }
 
 func new(cfg config.Config) BaseApp {
@@ -49,7 +41,6 @@ func (app *app) Init(ctx context.Context) {
 	app.initDb(ctx)
 
 	app.initRepos()
-	app.initServices()
 }
 
 func (app *app) Stop(ctx context.Context) {
@@ -78,14 +69,6 @@ func (app *app) EventsRepo() repository.EventRepository {
 	return app.eventsRepo
 }
 
-func (app *app) UsersService() users.UsersService {
-	return app.usersService
-}
-
-func (app *app) EventsService() events.EventsService {
-	return app.eventsService
-}
-
 func (app *app) initLogger() {
 	app.logger = logging.MustLoad(app.cfg)
 }
@@ -102,11 +85,6 @@ func (app *app) initDb(ctx context.Context) {
 func (app *app) initRepos() {
 	app.usersRepo = repository.NewUserRepository(app.db)
 	app.eventsRepo = repository.NewEventRepository(app.db)
-}
-
-func (app *app) initServices() {
-	app.usersService = users.NewUsersService(app.usersRepo)
-	app.eventsService = events.NewEventsService(app.eventsRepo)
 }
 
 func (app *app) closeDb(ctx context.Context) {
