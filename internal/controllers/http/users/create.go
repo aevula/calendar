@@ -4,20 +4,18 @@ import (
 	"net/http"
 
 	"github.com/aevula/interview-hustlers-calendar/internal/apperrors"
-	"github.com/aevula/interview-hustlers-calendar/internal/controllers/http/responses"
+	"github.com/aevula/interview-hustlers-calendar/internal/controllers/http/helpers"
 	"github.com/aevula/interview-hustlers-calendar/internal/controllers/http/users/dto/requests"
-
-	"github.com/go-chi/render"
+	"github.com/aevula/interview-hustlers-calendar/internal/controllers/http/users/dto/responses"
 )
 
 func (c *usersController) CreateUser() http.HandlerFunc {
 	return func(rw http.ResponseWriter, req *http.Request) {
 		ctx := req.Context()
 
-		params := requests.CreateUserRequest{}
-		err := render.DecodeJSON(req.Body, &params)
+		params, err := helpers.ParseBody[requests.CreateUserRequest](req.Body)
 		if err != nil {
-			responses.Error(rw, req, apperrors.BadRequest("BAD_REQUEST", err))
+			helpers.Error(rw, req, apperrors.BadRequest("BAD_REQUEST", err))
 			return
 		}
 
@@ -26,11 +24,13 @@ func (c *usersController) CreateUser() http.HandlerFunc {
 		user, err := c.service.Create(ctx, cmd)
 		if err != nil {
 			c.logger.Error(err.Error())
-			responses.Error(rw, req, apperrors.Internal("INTERNAL", err))
+			helpers.Error(rw, req, apperrors.Internal("INTERNAL", err))
 			return
 		}
 
-		c.logger.Info("Created User", c.logger.Int("ID", int(user.ID)))
-		responses.Success(rw, req, user, http.StatusCreated)
+		res := responses.ToCreateUserResponse(user)
+
+		c.logger.Info("Created User", c.logger.Int("ID", res.ID))
+		helpers.Success(rw, req, res, http.StatusCreated)
 	}
 }

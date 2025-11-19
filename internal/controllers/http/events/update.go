@@ -5,19 +5,17 @@ import (
 
 	"github.com/aevula/interview-hustlers-calendar/internal/apperrors"
 	"github.com/aevula/interview-hustlers-calendar/internal/controllers/http/events/dto/requests"
-	"github.com/aevula/interview-hustlers-calendar/internal/controllers/http/responses"
-
-	"github.com/go-chi/render"
+	"github.com/aevula/interview-hustlers-calendar/internal/controllers/http/events/dto/responses"
+	"github.com/aevula/interview-hustlers-calendar/internal/controllers/http/helpers"
 )
 
 func (c *eventsController) UpdateEvent() http.HandlerFunc {
 	return func(rw http.ResponseWriter, req *http.Request) {
 		ctx := req.Context()
 
-		params := requests.UpdateEventRequest{}
-		err := render.DecodeJSON(req.Body, &params)
+		params, err := helpers.ParseBody[requests.UpdateEventRequest](req.Body)
 		if err != nil {
-			responses.Error(rw, req, apperrors.BadRequest("BAD_REQUEST", err))
+			helpers.Error(rw, req, apperrors.BadRequest("BAD_REQUEST", err))
 			return
 		}
 
@@ -30,11 +28,13 @@ func (c *eventsController) UpdateEvent() http.HandlerFunc {
 		event, err := c.service.Update(ctx, cmd)
 		if err != nil {
 			c.logger.Error(err.Error())
-			responses.Error(rw, req, apperrors.Internal("INTERNAL", err))
+			helpers.Error(rw, req, apperrors.Internal("INTERNAL", err))
 			return
 		}
 
+		res := responses.ToUpdateEventResponse(event)
+
 		c.logger.Info("Updated Event", c.logger.Int("ID", int(event.ID)))
-		responses.Success(rw, req, event, http.StatusOK)
+		helpers.Success(rw, req, res, http.StatusOK)
 	}
 }

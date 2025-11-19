@@ -5,19 +5,17 @@ import (
 
 	"github.com/aevula/interview-hustlers-calendar/internal/apperrors"
 	"github.com/aevula/interview-hustlers-calendar/internal/controllers/http/events/dto/requests"
-	"github.com/aevula/interview-hustlers-calendar/internal/controllers/http/responses"
-
-	"github.com/go-chi/render"
+	"github.com/aevula/interview-hustlers-calendar/internal/controllers/http/events/dto/responses"
+	"github.com/aevula/interview-hustlers-calendar/internal/controllers/http/helpers"
 )
 
 func (c *eventsController) CreateEvent() http.HandlerFunc {
 	return func(rw http.ResponseWriter, req *http.Request) {
 		ctx := req.Context()
 
-		params := requests.CreateEventRequest{}
-		err := render.DecodeJSON(req.Body, &params)
+		params, err := helpers.ParseBody[requests.CreateEventRequest](req.Body)
 		if err != nil {
-			responses.Error(rw, req, apperrors.BadRequest("BAD_REQUEST", err))
+			helpers.Error(rw, req, apperrors.BadRequest("BAD_REQUEST", err))
 			return
 		}
 
@@ -30,11 +28,13 @@ func (c *eventsController) CreateEvent() http.HandlerFunc {
 		event, err := c.service.Create(ctx, cmd)
 		if err != nil {
 			c.logger.Error(err.Error())
-			responses.Error(rw, req, apperrors.Internal("INTERNAL", err))
+			helpers.Error(rw, req, apperrors.Internal("INTERNAL", err))
 			return
 		}
 
+		res := responses.ToCreateEventResponse(event)
+
 		c.logger.Info("Created Event", c.logger.Int("ID", int(event.ID)))
-		responses.Success(rw, req, event, http.StatusCreated)
+		helpers.Success(rw, req, res, http.StatusCreated)
 	}
 }
