@@ -21,7 +21,11 @@ func (c *eventsController) CreateEvent() http.HandlerFunc {
 			return
 		}
 
-		cmd := params.ToCommand()
+		cmd, err := params.ToCommand()
+		if err != nil {
+			helpers.Error(rw, req, apperrors.BadRequest("BAD_REQUEST", err))
+			return
+		}
 
 		event, err := c.service.Create(ctx, cmd)
 		if err != nil {

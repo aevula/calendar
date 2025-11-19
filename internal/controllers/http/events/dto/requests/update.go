@@ -7,21 +7,27 @@ import (
 )
 
 type UpdateEventRequest struct {
-	ID          int           `json:"id"`
-	Title       string        `json:"title"`
-	Description string        `json:"description"`
-	StartAt     time.Time     `json:"start_at"`
-	Duration    time.Duration `json:"duration"`
-	NotifyAt    time.Time     `json:"notify_at"`
+	ID          int       `json:"id"`
+	Title       string    `json:"title"`
+	Description string    `json:"description"`
+	StartAt     time.Time `json:"start_at"`
+	Duration    string    `json:"duration"`
+	NotifyAt    time.Time `json:"notify_at"`
 }
 
-func (r UpdateEventRequest) ToCommand() events.UpdateEventCommand {
-	return events.UpdateEventCommand{
+func (r UpdateEventRequest) ToCommand() (cmd events.UpdateEventCommand, err error) {
+	duration, err := time.ParseDuration(r.Duration)
+	if err != nil {
+		return
+	}
+
+	cmd = events.UpdateEventCommand{
 		ID:          r.ID,
 		Title:       r.Title,
 		Description: r.Description,
 		StartAt:     r.StartAt,
-		Duration:    r.Duration,
+		Duration:    duration,
 		NotifyAt:    r.NotifyAt,
 	}
+	return
 }
