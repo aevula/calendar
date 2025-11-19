@@ -10,11 +10,16 @@ import (
 )
 
 type notifyEvent struct {
-	eventsRepo repository.EventRepository
+	eventsRepo EventRepository
 	logger     logging.Logger
 }
 
-func NewNotifyEvent(eventsRepo repository.EventRepository, logger logging.Logger) Job {
+type EventRepository interface {
+	Update(ctx context.Context, event repository.Event) (repository.Event, error)
+	AllNotifyable(ctx context.Context, from time.Time) ([]repository.Event, error)
+}
+
+func NewNotifyEvent(eventsRepo EventRepository, logger logging.Logger) Job {
 	return &notifyEvent{
 		eventsRepo: eventsRepo,
 		logger:     logger.With(logger.String("tag", "notify_event")),

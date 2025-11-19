@@ -14,9 +14,16 @@ type EventsService interface {
 }
 
 type eventsService struct {
-	repo repository.EventRepository
+	repo EventRepository
 }
 
-func NewEventsService(repo repository.EventRepository) EventsService {
+type EventRepository interface {
+	Create(ctx context.Context, event repository.Event) (repository.Event, error)
+	Update(ctx context.Context, event repository.Event) (repository.Event, error)
+	Delete(ctx context.Context, id int) error
+	All(ctx context.Context) ([]repository.Event, error)
+}
+
+func NewEventsService(repo EventRepository) EventsService {
 	return &eventsService{repo: repo}
 }

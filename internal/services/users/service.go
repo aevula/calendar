@@ -11,9 +11,13 @@ type UsersService interface {
 }
 
 type usersService struct {
-	repo repository.UserRepository
+	repo UserRepository
 }
 
-func NewUsersService(repo repository.UserRepository) UsersService {
+type UserRepository interface {
+	Create(context.Context, repository.User) (repository.User, error)
+}
+
+func NewUsersService(repo UserRepository) UsersService {
 	return &usersService{repo: repo}
 }
