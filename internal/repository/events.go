@@ -8,16 +8,16 @@ import (
 )
 
 type Event struct {
-	ID           int
-	Title        string
-	Description  string
-	UserId       int
-	StartAt      time.Time
-	Duration     time.Duration
-	NotifyOffset time.Duration
-	NotifiedAt   time.Time
-	CreatedAt    time.Time
-	UpdatedAt    time.Time
+	ID          int
+	Title       string
+	Description string
+	UserId      int
+	StartAt     time.Time
+	Duration    time.Duration
+	NotifyAt    time.Time
+	NotifiedAt  time.Time
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
 }
 
 type EventRepository interface {
@@ -38,11 +38,11 @@ func NewEventRepository(db databases.Db) EventRepository {
 
 const eventCreateSQL = `
 INSERT INTO events (
-	title, description, user_id, start_at, duration, notify_offset
+	title, description, user_id, start_at, duration, notify_at
 ) VALUES (
 	$1,    $2, 			$3, 	 $4, 	   $5, 		 $6
 ) RETURNING
-	id, title, description, user_id, start_at, duration, notify_offset, notified_at, created_at, updated_at
+	id, title, description, user_id, start_at, duration, notify_at, notified_at, created_at, updated_at
 `
 
 func (r *eventRepository) Create(ctx context.Context, event Event) (Event, error) {
@@ -54,7 +54,7 @@ func (r *eventRepository) Create(ctx context.Context, event Event) (Event, error
 		event.UserId,
 		event.StartAt,
 		event.Duration,
-		event.NotifyOffset,
+		event.NotifyAt,
 	)
 	if err != nil {
 		return ev, err
@@ -67,7 +67,7 @@ func (r *eventRepository) Create(ctx context.Context, event Event) (Event, error
 		&ev.UserId,
 		&ev.StartAt,
 		&ev.Duration,
-		&ev.NotifyOffset,
+		&ev.NotifyAt,
 		&ev.NotifiedAt,
 		&ev.CreatedAt,
 		&ev.UpdatedAt,
@@ -77,11 +77,11 @@ func (r *eventRepository) Create(ctx context.Context, event Event) (Event, error
 
 const eventUpdateSQL = `
 UPDATE events SET (
-	title = $2, description = $3, user_id = $4, start_at = $5, duration = $6, notify_offset = $7, notified_at = $8
+	title = $2, description = $3, user_id = $4, start_at = $5, duration = $6, notify_at = $7, notified_at = $8
 ) WHERE
 	id = $1
 RETURNING
-	id, title, description, user_id, start_at, duration, notify_offset, notified_at, created_at, updated_at
+	id, title, description, user_id, start_at, duration, notify_at, notified_at, created_at, updated_at
 `
 
 func (r *eventRepository) Update(ctx context.Context, event Event) (Event, error) {
@@ -94,7 +94,7 @@ func (r *eventRepository) Update(ctx context.Context, event Event) (Event, error
 		event.UserId,
 		event.StartAt,
 		event.Duration,
-		event.NotifyOffset,
+		event.NotifyAt,
 		event.NotifiedAt,
 	)
 	if err != nil {
@@ -108,7 +108,7 @@ func (r *eventRepository) Update(ctx context.Context, event Event) (Event, error
 		&ev.UserId,
 		&ev.StartAt,
 		&ev.Duration,
-		&ev.NotifyOffset,
+		&ev.NotifyAt,
 		&ev.NotifiedAt,
 		&ev.CreatedAt,
 		&ev.UpdatedAt,
@@ -136,7 +136,7 @@ func (r *eventRepository) Delete(ctx context.Context, id int) error {
 
 const eventAllSQL = `
 SELECT (
-	id, title, description, user_id, start_at, duration, notify_offset, notified_at, created_at, updated_at
+	id, title, description, user_id, start_at, duration, notify_at, notified_at, created_at, updated_at
 ) FROM events`
 
 func (r *eventRepository) All(ctx context.Context) ([]Event, error) {
@@ -159,7 +159,7 @@ func (r *eventRepository) All(ctx context.Context) ([]Event, error) {
 			&event.UserId,
 			&event.StartAt,
 			&event.Duration,
-			&event.NotifyOffset,
+			&event.NotifyAt,
 			&event.NotifiedAt,
 			&event.CreatedAt,
 			&event.UpdatedAt,
@@ -176,9 +176,9 @@ func (r *eventRepository) All(ctx context.Context) ([]Event, error) {
 
 const eventNotifyableSQL = `
 SELECT (
-	id, title, description, user_id, start_at, duration, notify_offset
+	id, title, description, user_id, start_at, duration
 ) FROM events
-WHERE start_at < $1
+WHERE notify_at <= $1
 `
 
 func (r *eventRepository) AllNotifyable(ctx context.Context, from time.Time) ([]Event, error) {
@@ -201,7 +201,6 @@ func (r *eventRepository) AllNotifyable(ctx context.Context, from time.Time) ([]
 			&event.UserId,
 			&event.StartAt,
 			&event.Duration,
-			&event.NotifyOffset,
 		)
 		if err != nil {
 			return nil, err

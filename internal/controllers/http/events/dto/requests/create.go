@@ -7,21 +7,21 @@ import (
 )
 
 type CreateEventRequest struct {
-	Title        string        `json:"title"`
-	Description  string        `json:"description"`
-	UserId       int           `json:"user_id"`
-	StartAt      time.Time     `json:"start_at"`
-	Duration     time.Duration `json:"duration"`
-	NotifyOffset time.Duration `json:"notify_offset"`
+	Title       string        `json:"title"`
+	Description string        `json:"description"`
+	UserId      int           `json:"user_id"`
+	StartAt     time.Time     `json:"start_at"`
+	Duration    time.Duration `json:"duration"`
+	NotifyAt    time.Time     `json:"notify_at"`
 }
 
 func (r CreateEventRequest) ToCommand() events.CreateEventCommand {
 	return events.CreateEventCommand{
-		Title:        r.Title,
-		Description:  r.Description,
-		UserId:       r.UserId,
-		StartAt:      r.StartAt,
-		Duration:     r.Duration,
-		NotifyOffset: r.NotifyOffset,
+		Title:       r.Title,
+		Description: r.Description,
+		UserId:      r.UserId,
+		StartAt:     r.StartAt,
+		Duration:    r.Duration,
+		NotifyAt:    r.NotifyAt,
 	}
 }
