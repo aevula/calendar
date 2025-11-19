@@ -14,12 +14,17 @@ type Event struct {
 	StartAt     time.Time
 	Duration    time.Duration
 	NotifyAt    time.Time
-	NotifiedAt  time.Time
+	NotifiedAt  *time.Time
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 }
 
 func FromDomain(event domain.Event) Event {
+	var notified_at *time.Time
+	if !event.NotifiedAt.IsZero() {
+		notified_at = &event.NotifiedAt
+	}
+
 	return Event{
 		ID:          int(event.ID),
 		Title:       event.Title,
@@ -28,13 +33,18 @@ func FromDomain(event domain.Event) Event {
 		StartAt:     event.StartAt,
 		Duration:    event.Duration,
 		NotifyAt:    event.NotifyAt,
-		NotifiedAt:  event.NotifiedAt,
+		NotifiedAt:  notified_at,
 		CreatedAt:   event.CreatedAt,
 		UpdatedAt:   event.UpdatedAt,
 	}
 }
 
 func (event Event) ToDomain() domain.Event {
+	var notifiedAt time.Time
+	if event.NotifiedAt != nil {
+		notifiedAt = *event.NotifiedAt
+	}
+
 	return domain.Event{
 		ID:          domain.EventID(event.ID),
 		Title:       event.Title,
@@ -43,7 +53,7 @@ func (event Event) ToDomain() domain.Event {
 		StartAt:     event.StartAt,
 		Duration:    event.Duration,
 		NotifyAt:    event.NotifyAt,
-		NotifiedAt:  event.NotifiedAt,
+		NotifiedAt:  notifiedAt,
 		CreatedAt:   event.CreatedAt,
 		UpdatedAt:   event.UpdatedAt,
 	}

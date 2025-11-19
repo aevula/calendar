@@ -66,9 +66,9 @@ func (r *eventRepository) Create(ctx context.Context, event domain.Event) (domai
 }
 
 const eventUpdateSQL = `
-UPDATE events SET (
-	title = $2, description = $3, user_id = $4, start_at = $5, duration = $6, notify_at = $7, notified_at = $8
-) WHERE
+UPDATE events SET
+	title = $2, description = $3, start_at = $4, duration = $5, notify_at = $6, notified_at = $7
+WHERE
 	id = $1
 RETURNING
 	id, title, description, user_id, start_at, duration, notify_at, notified_at, created_at, updated_at
@@ -82,7 +82,6 @@ func (r *eventRepository) Update(ctx context.Context, event domain.Event) (domai
 		rEvent.ID,
 		rEvent.Title,
 		rEvent.Description,
-		rEvent.UserId,
 		rEvent.StartAt,
 		rEvent.Duration,
 		rEvent.NotifyAt,
@@ -127,9 +126,10 @@ func (r *eventRepository) Delete(ctx context.Context, id domain.EventID) error {
 }
 
 const eventAllSQL = `
-SELECT (
+SELECT
 	id, title, description, user_id, start_at, duration, notify_at, notified_at, created_at, updated_at
-) FROM events`
+FROM events
+`
 
 func (r *eventRepository) All(ctx context.Context) ([]domain.Event, error) {
 	rows, err := r.db.Query(ctx, eventAllSQL)
@@ -167,10 +167,10 @@ func (r *eventRepository) All(ctx context.Context) ([]domain.Event, error) {
 }
 
 const eventNotifyableSQL = `
-SELECT (
+SELECT
 	id, title, description, user_id, start_at, duration
-) FROM events
-WHERE notify_at <= $1
+FROM events
+WHERE notified_at is NULL AND notify_at <= $1
 `
 
 func (r *eventRepository) AllNotifyable(ctx context.Context, from time.Time) ([]domain.Event, error) {
