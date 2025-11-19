@@ -25,6 +25,7 @@ type EventRepository interface {
 	Update(ctx context.Context, event Event) (Event, error)
 	Delete(ctx context.Context, id int) error
 	All(ctx context.Context) ([]Event, error)
+	AllNotifyable(ctx context.Context, from time.Time) ([]Event, error)
 }
 
 type eventRepository struct {
@@ -162,6 +163,45 @@ func (r *eventRepository) All(ctx context.Context) ([]Event, error) {
 			&event.NotifiedAt,
 			&event.CreatedAt,
 			&event.UpdatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		events = append(events, event)
+	}
+
+	return events, nil
+}
+
+const eventNotifyableSQL = `
+SELECT (
+	id, title, description, user_id, start_at, duration, notify_offset
+) FROM events
+WHERE start_at < $1
+`
+
+func (r *eventRepository) AllNotifyable(ctx context.Context, from time.Time) ([]Event, error) {
+	rows, err := r.db.Query(ctx, eventNotifyableSQL, from)
+	if err != nil {
+		return nil, err
+	}
+
+	events := make([]Event, 0)
+	for rows.Next() {
+		if err := rows.Err(); err != nil {
+			return nil, err
+		}
+
+		event := Event{}
+		err = rows.Scan(
+			&event.ID,
+			&event.Title,
+			&event.Description,
+			&event.UserId,
+			&event.StartAt,
+			&event.Duration,
+			&event.NotifyOffset,
 		)
 		if err != nil {
 			return nil, err

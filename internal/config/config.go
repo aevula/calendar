@@ -18,9 +18,11 @@ const (
 type Config struct {
 	Env string `yaml:"env" env:"ENV"`
 
-	Server Server `yaml:"server"`
-	Log    Log    `yaml:"log"`
-	Db     Db     `yaml:"db"`
+	Server    Server    `yaml:"server"`
+	Scheduler Scheduler `yaml:"worker"`
+
+	Log Log `yaml:"log"`
+	Db  Db  `yaml:"db"`
 }
 
 func (cfg Config) IsDev() bool {
@@ -48,6 +50,14 @@ type Server struct {
 
 	InitTimeout time.Duration `yaml:"init_timeout" env:"SERVER_INIT_TIMEOUT"`
 	ShutTimeout time.Duration `yaml:"shut_timeout" env:"SERVER_SHUT_TIMEOUT"`
+}
+
+type Scheduler struct {
+	WorkersCount int           `yaml:"workers_count" env:"SCHEDULER_WORKERS_COUNT"`
+	RefreshRate  time.Duration `yaml:"refresh_rate"  env:"SCHEDULER_REFRESH_RATE"`
+
+	InitTimeout time.Duration `yaml:"init_timeout" env:"SCHEDULER_INIT_TIMEOUT"`
+	ShutTimeout time.Duration `yaml:"shut_timeout" env:"SCHEDULER_SHUT_TIMEOUT"`
 }
 
 type Log struct {
