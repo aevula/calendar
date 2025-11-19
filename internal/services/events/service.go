@@ -20,7 +20,7 @@ type eventsService struct {
 type EventRepository interface {
 	Create(ctx context.Context, event domain.Event) (domain.Event, error)
 	Update(ctx context.Context, event domain.Event) (domain.Event, error)
-	Delete(ctx context.Context, id int) error
+	Delete(ctx context.Context, id domain.EventID) error
 	All(ctx context.Context) ([]domain.Event, error)
 }
 

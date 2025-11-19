@@ -2,8 +2,10 @@ package users
 
 import "time"
 
+type UserID int
+
 type User struct {
-	ID        int
+	ID        UserID
 	Login     string
 	Name      string
 	CreatedAt time.Time

@@ -30,7 +30,7 @@ func (c *eventsController) UpdateEvent() http.HandlerFunc {
 			return
 		}
 
-		c.logger.Info("Updated Event", c.logger.Int("ID", event.ID))
+		c.logger.Info("Updated Event", c.logger.Int("ID", int(event.ID)))
 		responses.Success(rw, req, event, http.StatusOK)
 	}
 }

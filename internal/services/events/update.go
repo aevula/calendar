@@ -18,7 +18,7 @@ type UpdateEventCommand struct {
 
 func (s *eventsService) Update(ctx context.Context, cmd UpdateEventCommand) (domain.Event, error) {
 	event := domain.Event{
-		ID:          cmd.ID,
+		ID:          domain.EventID(cmd.ID),
 		Title:       cmd.Title,
 		Description: cmd.Description,
 		StartAt:     cmd.StartAt,

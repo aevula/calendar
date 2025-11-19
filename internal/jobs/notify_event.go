@@ -43,7 +43,7 @@ func (job *notifyEvent) Run(ctx context.Context) {
 			if _, err := job.eventsRepo.Update(ctx, events[i]); err != nil {
 				job.logger.Error(err.Error())
 			} else {
-				job.logger.Debug("Notified", job.logger.Int("id", events[i].ID))
+				job.logger.Debug("Notified", job.logger.Int("id", int(events[i].ID)))
 			}
 		})
 	}

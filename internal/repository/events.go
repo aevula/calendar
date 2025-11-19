@@ -12,7 +12,7 @@ import (
 type EventRepository interface {
 	Create(ctx context.Context, event domain.Event) (domain.Event, error)
 	Update(ctx context.Context, event domain.Event) (domain.Event, error)
-	Delete(ctx context.Context, id int) error
+	Delete(ctx context.Context, id domain.EventID) error
 	All(ctx context.Context) ([]domain.Event, error)
 	AllNotifyable(ctx context.Context, from time.Time) ([]domain.Event, error)
 }
@@ -115,13 +115,14 @@ RETURNING
 	id
 `
 
-func (r *eventRepository) Delete(ctx context.Context, id int) error {
-	row, err := r.db.QueryRow(ctx, eventDeleteSQL, id)
+func (r *eventRepository) Delete(ctx context.Context, id domain.EventID) error {
+	row, err := r.db.QueryRow(ctx, eventDeleteSQL, int(id))
 	if err != nil {
 		return err
 	}
 
-	err = row.Scan(&id)
+	var zero int
+	err = row.Scan(&zero)
 	return err
 }
 

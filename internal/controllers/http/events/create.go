@@ -30,7 +30,7 @@ func (c *eventsController) CreateEvent() http.HandlerFunc {
 			return
 		}
 
-		c.logger.Info("Created Event", c.logger.Int("ID", event.ID))
+		c.logger.Info("Created Event", c.logger.Int("ID", int(event.ID)))
 		responses.Success(rw, req, event, http.StatusCreated)
 	}
 }

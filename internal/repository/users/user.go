@@ -16,7 +16,7 @@ type User struct {
 
 func FromDomain(user domain.User) User {
 	return User{
-		ID:        user.ID,
+		ID:        int(user.ID),
 		Login:     user.Login,
 		CreatedAt: user.CreatedAt,
 		UpdatedAt: user.UpdatedAt,
@@ -25,7 +25,7 @@ func FromDomain(user domain.User) User {
 
 func (user User) ToDomain() domain.User {
 	return domain.User{
-		ID:        user.ID,
+		ID:        domain.UserID(user.ID),
 		Login:     user.Login,
 		CreatedAt: user.CreatedAt,
 		UpdatedAt: user.UpdatedAt,

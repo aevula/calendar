@@ -30,7 +30,7 @@ func (c *usersController) CreateUser() http.HandlerFunc {
 			return
 		}
 
-		c.logger.Info("Created User", c.logger.Int("ID", user.ID))
+		c.logger.Info("Created User", c.logger.Int("ID", int(user.ID)))
 		responses.Success(rw, req, user, http.StatusCreated)
 	}
 }

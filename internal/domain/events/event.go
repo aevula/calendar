@@ -2,13 +2,18 @@ package events
 
 import (
 	"time"
+
+	usersDomain "github.com/aevula/interview-hustlers-calendar/internal/domain/users"
 )
 
+type EventID int
+type UserID usersDomain.UserID
+
 type Event struct {
-	ID          int
+	ID          EventID
 	Title       string
 	Description string
-	UserId      int
+	UserId      UserID
 	StartAt     time.Time
 	Duration    time.Duration
 	NotifyAt    time.Time

@@ -21,10 +21,10 @@ type Event struct {
 
 func FromDomain(event domain.Event) Event {
 	return Event{
-		ID:          event.ID,
+		ID:          int(event.ID),
 		Title:       event.Title,
 		Description: event.Description,
-		UserId:      event.UserId,
+		UserId:      int(event.UserId),
 		StartAt:     event.StartAt,
 		Duration:    event.Duration,
 		NotifyAt:    event.NotifyAt,
@@ -36,10 +36,10 @@ func FromDomain(event domain.Event) Event {
 
 func (event Event) ToDomain() domain.Event {
 	return domain.Event{
-		ID:          event.ID,
+		ID:          domain.EventID(event.ID),
 		Title:       event.Title,
 		Description: event.Description,
-		UserId:      event.UserId,
+		UserId:      domain.UserID(event.UserId),
 		StartAt:     event.StartAt,
 		Duration:    event.Duration,
 		NotifyAt:    event.NotifyAt,

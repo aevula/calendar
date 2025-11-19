@@ -20,7 +20,7 @@ func (s *eventsService) Create(ctx context.Context, cmd CreateEventCommand) (dom
 	event := domain.Event{
 		Title:       cmd.Title,
 		Description: cmd.Description,
-		UserId:      cmd.UserId,
+		UserId:      domain.UserID(cmd.UserId),
 		StartAt:     cmd.StartAt,
 		Duration:    cmd.Duration,
 		NotifyAt:    cmd.NotifyAt,
