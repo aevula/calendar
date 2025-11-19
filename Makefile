@@ -23,8 +23,9 @@ GOOSE_BIN := $(WORK_DIR)/tools/bin/goose
 help:
 	@echo "Available targets:"
 	@echo "  setup         -  full setup (docker, db, tools) (GOOSE_REBUILD=1 available)"
-	@echo "  run           -  run app locally (RACE=1 available)"
-	@echo "  run-docker    -  start app via docker compose"
+	@echo "  server        -  run server locally (RACE=1 available)"
+	@echo "  scheduler     -  run scheduler locally (RACE=1 available)"
+	@echo "  run-docker    -  start server and scheduler via docker compose"
 	@echo "  setup-docker  -  build docker images"
 	@echo "  setup-db      -  create database if not exists"
 	@echo "  setup-goose   -  fetch and build custom goose binary (GOOSE_REBUILD=1 available)"
@@ -109,16 +110,24 @@ endif
 	$(GOOSE_BIN) -dir $(MIGRATIONS_DIR) create -s $(name) sql
 
 # === Run ===
-.PHONY: run-docker
-run-docker:
-	docker compose up -d app
+.PHONY: up-docker
+uprun-docker:
+	docker compose up -d app scheduler
 
-.PHONY: run
-run:
+.PHONY: server
+server:
 ifeq ($(RACE),1)
-	go run -race ./cmd/server.go
+	go run -race ./cmd/server/server.go
 else
-	go run ./cmd/server.go
+	go run ./cmd/server/server.go
+endif
+
+.PHONY: scheduler
+scheduler:
+ifeq ($(RACE),1)
+	go run -race ./cmd/scheduler/scheduler.go
+else
+	go run ./cmd/scheduler/scheduler.go
 endif
 
 # === Colors ===
