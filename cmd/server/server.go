@@ -27,7 +27,7 @@ func main() {
 	case <-ctx.Done():
 	}
 
-	ctx, stop = context.WithTimeout(ctx, cfg.Server.ShutTimeout)
+	ctx, stop = context.WithTimeout(context.Background(), cfg.Server.ShutTimeout)
 	defer stop()
 
 	app.Stop(ctx)
