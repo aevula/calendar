@@ -16,6 +16,9 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
+	ctx, stop = context.WithTimeout(ctx, cfg.Scheduler.InitTimeout)
+	defer stop()
+
 	app := application.NewScheduler(cfg)
 	app.Init(ctx)
 
@@ -24,7 +27,7 @@ func main() {
 	case <-ctx.Done():
 	}
 
-	ctx, stop = signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+	ctx, stop = context.WithTimeout(context.Background(), cfg.Scheduler.ShutTimeout)
 	defer stop()
 
 	app.Stop(ctx)

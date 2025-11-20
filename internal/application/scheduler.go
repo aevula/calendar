@@ -30,9 +30,6 @@ func NewScheduler(cfg config.Config) Scheduler {
 }
 
 func (sched *scheduler) Init(ctx context.Context) {
-	ctx, cancel := context.WithTimeout(ctx, sched.app.Cfg().Scheduler.InitTimeout)
-	defer cancel()
-
 	sched.app.Init(ctx)
 
 	sched.logger = sched.app.Logger().With(sched.app.Logger().String("tag", "scheduler"))
@@ -76,9 +73,6 @@ func (sched *scheduler) Run(ctx context.Context) <-chan struct{} {
 }
 
 func (sched *scheduler) Stop(ctx context.Context) {
-	ctx, cancel := context.WithTimeout(ctx, sched.app.Cfg().Scheduler.ShutTimeout)
-	defer cancel()
-
 	sched.logger.Info("Shutting down ...")
 	defer sched.logger.Info("Shut down")
 

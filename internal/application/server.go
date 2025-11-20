@@ -35,9 +35,6 @@ func NewServer(cfg config.Config) Server {
 }
 
 func (server *server) Init(ctx context.Context) {
-	ctx, cancel := context.WithTimeout(ctx, server.app.Cfg().Server.InitTimeout)
-	defer cancel()
-
 	server.app.Init(ctx)
 
 	server.logger = server.app.Logger().With(server.app.Logger().String("tag", "server"))
@@ -70,9 +67,6 @@ func (server *server) Run(ctx context.Context) <-chan struct{} {
 }
 
 func (server *server) Stop(ctx context.Context) {
-	ctx, cancel := context.WithTimeout(ctx, server.app.Cfg().Server.ShutTimeout)
-	defer cancel()
-
 	server.logger.Info("Shutting down ...")
 	defer server.logger.Info("Shut down")
 
