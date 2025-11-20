@@ -1,4 +1,4 @@
-package helpers
+package httputils
 
 import (
 	"io"
@@ -6,8 +6,7 @@ import (
 	"github.com/go-chi/render"
 )
 
-func ParseBody[T any](body io.ReadCloser) (T, error) {
-	var params T
+func ParseBody[T any](body io.ReadCloser, params T) (T, error) {
 	err := render.DecodeJSON(body, &params)
 	return params, err
 }

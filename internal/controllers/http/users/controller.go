@@ -8,7 +8,7 @@ import (
 )
 
 type UsersController interface {
-	CreateUser() http.HandlerFunc
+	CreateUser(rw http.ResponseWriter, req *http.Request)
 }
 
 type usersController struct {

@@ -8,10 +8,10 @@ import (
 )
 
 type EventsController interface {
-	CreateEvent() http.HandlerFunc
-	UpdateEvent() http.HandlerFunc
-	DeleteEvent() http.HandlerFunc
-	ListEvents() http.HandlerFunc
+	CreateEvent(rw http.ResponseWriter, req *http.Request)
+	UpdateEvent(rw http.ResponseWriter, req *http.Request)
+	DeleteEvent(rw http.ResponseWriter, req *http.Request)
+	ListEvents(rw http.ResponseWriter, req *http.Request)
 }
 
 type eventsController struct {

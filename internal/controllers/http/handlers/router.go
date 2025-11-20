@@ -24,14 +24,14 @@ func NewRouter() Router {
 }
 
 func (r *router) BuildUsers(controller users.UsersController) {
-	r.router.Post("/api/v1/users", controller.CreateUser())
+	r.router.Post("/api/v1/users", controller.CreateUser)
 }
 
 func (r *router) BuildEvents(controller events.EventsController) {
-	r.router.Get("/api/v1/events", controller.ListEvents())
-	r.router.Post("/api/v1/events", controller.CreateEvent())
-	r.router.Put("/api/v1/events", controller.UpdateEvent())
-	r.router.Delete("/api/v1/events", controller.DeleteEvent())
+	r.router.Get("/api/v1/events", controller.ListEvents)
+	r.router.Post("/api/v1/events", controller.CreateEvent)
+	r.router.Put("/api/v1/events", controller.UpdateEvent)
+	r.router.Delete("/api/v1/events", controller.DeleteEvent)
 }
 
 func (r *router) Done() chi.Router {
