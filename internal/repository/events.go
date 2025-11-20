@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"time"
 
 	"github.com/aevula/interview-hustlers-calendar/internal/databases"
 	domain "github.com/aevula/interview-hustlers-calendar/internal/domain/events"
@@ -14,6 +13,7 @@ type EventRepository interface {
 	Update(ctx context.Context, event domain.Event) (domain.Event, error)
 	Delete(ctx context.Context, id domain.EventID) error
 	FindAllByStartAt(ctx context.Context, filter domain.StartAtFilter) ([]domain.Event, error)
+	FindAllByNotifiedAt(ctx context.Context, filter domain.NotifiedAtFilter) ([]domain.Event, error)
 }
 
 type eventRepository struct {
@@ -167,15 +167,16 @@ func (r *eventRepository) FindAllByStartAt(ctx context.Context, filter domain.St
 	return events, nil
 }
 
-const eventNotifyableSQL = `
+const findAllByNotifiedAtSQL = `
 SELECT
-	id, title, description, user_id, start_at, duration
+	id
 FROM events
-WHERE notified_at is NULL AND notify_at <= $1
+WHERE
+	notified_at <= $1
 `
 
-func (r *eventRepository) AllNotifyable(ctx context.Context, from time.Time) ([]domain.Event, error) {
-	rows, err := r.db.Query(ctx, eventNotifyableSQL, from)
+func (r *eventRepository) FindAllByNotifiedAt(ctx context.Context, filter domain.NotifiedAtFilter) ([]domain.Event, error) {
+	rows, err := r.db.Query(ctx, findAllByNotifiedAtSQL, filter.LTE)
 	if err != nil {
 		return nil, err
 	}
@@ -189,11 +190,6 @@ func (r *eventRepository) AllNotifyable(ctx context.Context, from time.Time) ([]
 		event := repo.Event{}
 		err = rows.Scan(
 			&event.ID,
-			&event.Title,
-			&event.Description,
-			&event.UserId,
-			&event.StartAt,
-			&event.Duration,
 		)
 		if err != nil {
 			return nil, err

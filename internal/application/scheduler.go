@@ -91,7 +91,7 @@ func (sched *scheduler) initWorkers() {
 }
 
 func (sched *scheduler) tick(ctx context.Context) {
-	job := jobs.NewNotifyEvent(sched.app.EventsRepo(), sched.logger)
+	job := jobs.NewDeleteOldEvents(sched.app.EventsRepo(), sched.logger)
 
 	select {
 	case worker := <-sched.ready:
