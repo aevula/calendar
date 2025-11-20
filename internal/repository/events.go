@@ -13,8 +13,7 @@ type EventRepository interface {
 	Create(ctx context.Context, event domain.Event) (domain.Event, error)
 	Update(ctx context.Context, event domain.Event) (domain.Event, error)
 	Delete(ctx context.Context, id domain.EventID) error
-	All(ctx context.Context) ([]domain.Event, error)
-	AllNotifyable(ctx context.Context, from time.Time) ([]domain.Event, error)
+	FindAllByStartAt(ctx context.Context, filter domain.StartAtFilter) ([]domain.Event, error)
 }
 
 type eventRepository struct {
@@ -125,14 +124,16 @@ func (r *eventRepository) Delete(ctx context.Context, id domain.EventID) error {
 	return err
 }
 
-const eventAllSQL = `
+const findAllByStartAtSQL = `
 SELECT
 	id, title, description, user_id, start_at, duration, notify_at, notified_at, created_at, updated_at
 FROM events
+WHERE
+	start_at >= $1 AND start_at <= $2
 `
 
-func (r *eventRepository) All(ctx context.Context) ([]domain.Event, error) {
-	rows, err := r.db.Query(ctx, eventAllSQL)
+func (r *eventRepository) FindAllByStartAt(ctx context.Context, filter domain.StartAtFilter) ([]domain.Event, error) {
+	rows, err := r.db.Query(ctx, findAllByStartAtSQL, filter.GTE, filter.LTE)
 	if err != nil {
 		return nil, err
 	}

@@ -10,7 +10,7 @@ type EventsService interface {
 	Create(ctx context.Context, cmd CreateEventCommand) (domain.Event, error)
 	Update(ctx context.Context, cmd UpdateEventCommand) (domain.Event, error)
 	Delete(ctx context.Context, cmd DeleteEventCommand) error
-	All(ctx context.Context) ([]domain.Event, error)
+	List(ctx context.Context, cmd ListEventsCommand) ([]domain.Event, error)
 }
 
 type eventsService struct {
@@ -21,7 +21,7 @@ type EventRepository interface {
 	Create(ctx context.Context, event domain.Event) (domain.Event, error)
 	Update(ctx context.Context, event domain.Event) (domain.Event, error)
 	Delete(ctx context.Context, id domain.EventID) error
-	All(ctx context.Context) ([]domain.Event, error)
+	FindAllByStartAt(ctx context.Context, filter domain.StartAtFilter) ([]domain.Event, error)
 }
 
 func NewEventsService(repo EventRepository) EventsService {
