@@ -39,9 +39,14 @@ func (server *server) Init(ctx context.Context) {
 	defer cancel()
 
 	server.app.Init(ctx)
-	server.logger = server.app.Logger().With(server.app.Logger().String("tag", "server"))
 
-	server.logStarting()
+	server.logger = server.app.Logger().With(server.app.Logger().String("tag", "server"))
+	server.logger.Info(
+		"Starting ...",
+		server.logger.Int("pid", os.Getpid()),
+		server.logger.String("env", server.app.Cfg().Env),
+		server.logger.String("log_level", server.logger.Level().String()),
+	)
 
 	server.initControllers()
 	server.initServer()
@@ -53,7 +58,7 @@ func (server *server) Run(ctx context.Context) <-chan struct{} {
 	go func() {
 		defer close(done)
 
-		server.logStarted()
+		server.logger.Info("Started", server.logger.String("addr", server.Server.Addr))
 		server.logger.Sync()
 
 		if err := server.Server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
@@ -68,8 +73,8 @@ func (server *server) Stop(ctx context.Context) {
 	ctx, cancel := context.WithTimeout(ctx, server.app.Cfg().Server.ShutTimeout)
 	defer cancel()
 
-	server.logStoping()
-	defer server.logStoped()
+	server.logger.Info("Shutting down ...")
+	defer server.logger.Info("Shut down")
 
 	server.closeServer(ctx)
 
@@ -104,25 +109,4 @@ func (server *server) closeServer(ctx context.Context) {
 	if err != nil {
 		server.logger.Error(err.Error())
 	}
-}
-
-func (server *server) logStarting() {
-	server.logger.Info(
-		"Starting ...",
-		server.logger.Int("pid", os.Getpid()),
-		server.logger.String("env", server.app.Cfg().Env),
-		server.logger.String("log_level", server.logger.Level().String()),
-	)
-}
-
-func (server *server) logStarted() {
-	server.logger.Info("Started", server.logger.String("addr", server.Server.Addr))
-}
-
-func (server *server) logStoping() {
-	server.logger.Info("Shutting down ...")
-}
-
-func (server *server) logStoped() {
-	server.logger.Info("Shut down")
 }

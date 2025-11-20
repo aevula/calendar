@@ -16,7 +16,7 @@ type BaseApp interface {
 
 	Cfg() config.Config
 	Logger() logging.Logger
-	Db() databases.Db
+	DB() databases.DB
 
 	UsersRepo() repository.UserRepository
 	EventsRepo() repository.EventRepository
@@ -25,7 +25,7 @@ type BaseApp interface {
 type app struct {
 	cfg    config.Config
 	logger logging.Logger
-	db     databases.Db
+	db     databases.DB
 
 	usersRepo  repository.UserRepository
 	eventsRepo repository.EventRepository
@@ -57,7 +57,7 @@ func (app *app) Logger() logging.Logger {
 	return app.logger
 }
 
-func (app *app) Db() databases.Db {
+func (app *app) DB() databases.DB {
 	return app.db
 }
 
@@ -76,6 +76,10 @@ func (app *app) initLogger() {
 func (app *app) initDb(ctx context.Context) {
 	db, err := postgres.New(ctx, app.cfg)
 	if err != nil {
+		app.logger.Fatal(err.Error())
+	}
+
+	if err = db.Ping(ctx); err != nil {
 		app.logger.Fatal(err.Error())
 	}
 

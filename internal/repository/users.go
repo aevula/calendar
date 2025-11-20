@@ -13,10 +13,10 @@ type UserRepository interface {
 }
 
 type userRepository struct {
-	db databases.Db
+	db databases.DB
 }
 
-func NewUserRepository(db databases.Db) UserRepository {
+func NewUserRepository(db databases.DB) UserRepository {
 	return &userRepository{db: db}
 }
 

@@ -34,9 +34,14 @@ func (sched *scheduler) Init(ctx context.Context) {
 	defer cancel()
 
 	sched.app.Init(ctx)
-	sched.logger = sched.app.Logger().With(sched.app.Logger().String("tag", "scheduler"))
 
-	sched.logStarting()
+	sched.logger = sched.app.Logger().With(sched.app.Logger().String("tag", "scheduler"))
+	sched.logger.Info(
+		"Starting ...",
+		sched.logger.Int("pid", os.Getpid()),
+		sched.logger.String("env", sched.app.Cfg().Env),
+		sched.logger.String("log_level", sched.logger.Level().String()),
+	)
 
 	sched.initWorkers()
 }
@@ -54,7 +59,7 @@ func (sched *scheduler) Run(ctx context.Context) <-chan struct{} {
 		defer close(done)
 		defer ticker.Stop()
 
-		sched.logStarted()
+		sched.logger.Info("Started")
 		sched.logger.Sync()
 
 		for {
@@ -74,8 +79,8 @@ func (sched *scheduler) Stop(ctx context.Context) {
 	ctx, cancel := context.WithTimeout(ctx, sched.app.Cfg().Scheduler.ShutTimeout)
 	defer cancel()
 
-	sched.logStoping()
-	defer sched.logStoped()
+	sched.logger.Info("Shutting down ...")
+	defer sched.logger.Info("Shut down")
 
 	sched.stopWorkers(ctx)
 
@@ -108,25 +113,4 @@ func (sched *scheduler) stopWorkers(ctx context.Context) {
 			sched.logger.Error(err.Error())
 		}
 	}
-}
-
-func (sched *scheduler) logStarting() {
-	sched.logger.Info(
-		"Starting ...",
-		sched.logger.Int("pid", os.Getpid()),
-		sched.logger.String("env", sched.app.Cfg().Env),
-		sched.logger.String("log_level", sched.logger.Level().String()),
-	)
-}
-
-func (sched *scheduler) logStarted() {
-	sched.logger.Info("Started")
-}
-
-func (sched *scheduler) logStoping() {
-	sched.logger.Info("Shutting down ...")
-}
-
-func (sched *scheduler) logStoped() {
-	sched.logger.Info("Shut down")
 }

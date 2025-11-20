@@ -18,10 +18,10 @@ type EventRepository interface {
 }
 
 type eventRepository struct {
-	db databases.Db
+	db databases.DB
 }
 
-func NewEventRepository(db databases.Db) EventRepository {
+func NewEventRepository(db databases.DB) EventRepository {
 	return &eventRepository{db: db}
 }
 

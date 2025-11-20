@@ -22,7 +22,7 @@ type Config struct {
 	Scheduler Scheduler `yaml:"worker"`
 
 	Log Log `yaml:"log"`
-	Db  Db  `yaml:"db"`
+	DB  DB  `yaml:"db"`
 }
 
 func (cfg Config) IsDev() bool {
@@ -66,7 +66,7 @@ type Log struct {
 	Plain bool   `yaml:"plain" env:"LOG_PLAIN"`
 }
 
-type Db struct {
+type DB struct {
 	User     string `yaml:"user"     env:"DB_USER"`
 	Password string `yaml:"password" env:"DB_PASSWORD"`
 	Host     string `yaml:"host"     env:"DB_HOST"`
