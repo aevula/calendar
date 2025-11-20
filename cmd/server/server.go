@@ -16,11 +16,11 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
-	ctx, stop = context.WithTimeout(ctx, cfg.Server.InitTimeout)
-	defer stop()
-
 	app := application.NewServer(cfg)
-	app.Init(ctx)
+
+	initCtx, inited := context.WithTimeout(context.Background(), cfg.Server.InitTimeout)
+	app.Init(initCtx)
+	inited()
 
 	select {
 	case <-app.Run(ctx):
