@@ -3,27 +3,29 @@ package events
 import (
 	"context"
 
-	domain "github.com/aevula/interview-hustlers-calendar/internal/domain/events"
+	eventsDomain "github.com/aevula/interview-hustlers-calendar/internal/domain/events"
+	tasksService "github.com/aevula/interview-hustlers-calendar/internal/services/tasks"
 )
 
 type EventsService interface {
-	Create(ctx context.Context, cmd CreateEventCommand) (domain.Event, error)
-	Update(ctx context.Context, cmd UpdateEventCommand) (domain.Event, error)
+	Create(ctx context.Context, cmd CreateEventCommand) (eventsDomain.Event, error)
+	Update(ctx context.Context, cmd UpdateEventCommand) (eventsDomain.Event, error)
 	Delete(ctx context.Context, cmd DeleteEventCommand) error
-	List(ctx context.Context, cmd ListEventsCommand) ([]domain.Event, error)
+	List(ctx context.Context, cmd ListEventsCommand) ([]eventsDomain.Event, error)
 }
 
 type eventsService struct {
-	repo EventRepository
+	repo         EventRepository
+	tasksService tasksService.TasksService
 }
 
 type EventRepository interface {
-	Create(ctx context.Context, event domain.Event) (domain.Event, error)
-	Update(ctx context.Context, event domain.Event) (domain.Event, error)
-	Delete(ctx context.Context, id domain.EventID) error
-	FindAllByStartAt(ctx context.Context, filter domain.StartAtFilter) ([]domain.Event, error)
+	Create(ctx context.Context, event eventsDomain.Event) (eventsDomain.Event, error)
+	Update(ctx context.Context, event eventsDomain.Event) (eventsDomain.Event, error)
+	Delete(ctx context.Context, id eventsDomain.EventID) error
+	FindAllByStartAt(ctx context.Context, filter eventsDomain.StartAtFilter) ([]eventsDomain.Event, error)
 }
 
-func NewEventsService(repo EventRepository) EventsService {
-	return &eventsService{repo: repo}
+func NewEventsService(repo EventRepository, tasksService tasksService.TasksService) EventsService {
+	return &eventsService{repo: repo, tasksService: tasksService}
 }

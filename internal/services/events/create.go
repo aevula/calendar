@@ -4,7 +4,8 @@ import (
 	"context"
 	"time"
 
-	domain "github.com/aevula/interview-hustlers-calendar/internal/domain/events"
+	eventsDomain "github.com/aevula/interview-hustlers-calendar/internal/domain/events"
+	tasksService "github.com/aevula/interview-hustlers-calendar/internal/services/tasks"
 )
 
 type CreateEventCommand struct {
@@ -16,11 +17,11 @@ type CreateEventCommand struct {
 	NotifyAt    time.Time
 }
 
-func (s *eventsService) Create(ctx context.Context, cmd CreateEventCommand) (domain.Event, error) {
-	event := domain.Event{
+func (s *eventsService) Create(ctx context.Context, cmd CreateEventCommand) (eventsDomain.Event, error) {
+	event := eventsDomain.Event{
 		Title:       cmd.Title,
 		Description: cmd.Description,
-		UserId:      domain.UserID(cmd.UserId),
+		UserId:      eventsDomain.UserID(cmd.UserId),
 		StartAt:     cmd.StartAt,
 		Duration:    cmd.Duration,
 		NotifyAt:    cmd.NotifyAt,
@@ -28,5 +29,17 @@ func (s *eventsService) Create(ctx context.Context, cmd CreateEventCommand) (dom
 
 	event.EnsureNotifyAt()
 
-	return s.repo.Create(ctx, event)
+	event, err := s.repo.Create(ctx, event)
+	if err != nil {
+		return event, err
+	}
+
+	taskCmd := tasksService.CreateTaskCommand{
+		Name:    "send_events_notifications",
+		Queue:   "send_events_notifications_queue",
+		Payload: map[string]any{"eventID": event.ID},
+	}
+
+	_, err = s.tasksService.Create(ctx, taskCmd)
+	return event, err
 }

@@ -1,7 +1,7 @@
 package requests
 
 import (
-	"github.com/aevula/interview-hustlers-calendar/internal/services/users"
+	usersService "github.com/aevula/interview-hustlers-calendar/internal/services/users"
 )
 
 type CreateUserRequest struct {
@@ -9,8 +9,8 @@ type CreateUserRequest struct {
 	Name  string `json:"name"`
 }
 
-func (r CreateUserRequest) ToCommand() users.CreateUserCommand {
-	return users.CreateUserCommand{
+func (r CreateUserRequest) ToCommand() usersService.CreateUserCommand {
+	return usersService.CreateUserCommand{
 		Login: r.Login,
 		Name:  r.Name,
 	}

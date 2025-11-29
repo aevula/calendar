@@ -20,6 +20,7 @@ type BaseApp interface {
 
 	UsersRepo() repository.UserRepository
 	EventsRepo() repository.EventRepository
+	TasksRepo() repository.TaskRepository
 }
 
 type app struct {
@@ -29,9 +30,10 @@ type app struct {
 
 	usersRepo  repository.UserRepository
 	eventsRepo repository.EventRepository
+	tasksRepo  repository.TaskRepository
 }
 
-func new(cfg config.Config) BaseApp {
+func New(cfg config.Config) BaseApp {
 	return &app{cfg: cfg}
 }
 
@@ -69,6 +71,10 @@ func (app *app) EventsRepo() repository.EventRepository {
 	return app.eventsRepo
 }
 
+func (app *app) TasksRepo() repository.TaskRepository {
+	return app.tasksRepo
+}
+
 func (app *app) initLogger() {
 	app.logger = logging.MustLoad(app.cfg)
 }
@@ -89,6 +95,7 @@ func (app *app) initDb(ctx context.Context) {
 func (app *app) initRepos() {
 	app.usersRepo = repository.NewUserRepository(app.db)
 	app.eventsRepo = repository.NewEventRepository(app.db)
+	app.tasksRepo = repository.NewTaskRepository(app.db)
 }
 
 func (app *app) closeDb(ctx context.Context) {

@@ -3,7 +3,7 @@ package requests
 import (
 	"time"
 
-	"github.com/aevula/interview-hustlers-calendar/internal/services/events"
+	eventsService "github.com/aevula/interview-hustlers-calendar/internal/services/events"
 )
 
 type UpdateEventRequest struct {
@@ -15,13 +15,13 @@ type UpdateEventRequest struct {
 	NotifyAt    time.Time `json:"notify_at"`
 }
 
-func (r UpdateEventRequest) ToCommand() (cmd events.UpdateEventCommand, err error) {
+func (r UpdateEventRequest) ToCommand() (cmd eventsService.UpdateEventCommand, err error) {
 	duration, err := time.ParseDuration(r.Duration)
 	if err != nil {
 		return
 	}
 
-	cmd = events.UpdateEventCommand{
+	cmd = eventsService.UpdateEventCommand{
 		ID:          r.ID,
 		Title:       r.Title,
 		Description: r.Description,

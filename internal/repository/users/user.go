@@ -1,9 +1,9 @@
-package events
+package users
 
 import (
 	"time"
 
-	domain "github.com/aevula/interview-hustlers-calendar/internal/domain/users"
+	usersDomain "github.com/aevula/interview-hustlers-calendar/internal/domain/users"
 )
 
 type User struct {
@@ -14,7 +14,7 @@ type User struct {
 	UpdatedAt time.Time
 }
 
-func FromDomain(user domain.User) User {
+func FromDomain(user usersDomain.User) User {
 	return User{
 		ID:        int(user.ID),
 		Login:     user.Login,
@@ -23,9 +23,9 @@ func FromDomain(user domain.User) User {
 	}
 }
 
-func (user User) ToDomain() domain.User {
-	return domain.User{
-		ID:        domain.UserID(user.ID),
+func (user User) ToDomain() usersDomain.User {
+	return usersDomain.User{
+		ID:        usersDomain.UserID(user.ID),
 		Login:     user.Login,
 		CreatedAt: user.CreatedAt,
 		UpdatedAt: user.UpdatedAt,

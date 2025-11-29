@@ -4,12 +4,12 @@ import (
 	"context"
 
 	"github.com/aevula/interview-hustlers-calendar/internal/databases"
-	domain "github.com/aevula/interview-hustlers-calendar/internal/domain/users"
-	repo "github.com/aevula/interview-hustlers-calendar/internal/repository/users"
+	usersDomain "github.com/aevula/interview-hustlers-calendar/internal/domain/users"
+	usersRepo "github.com/aevula/interview-hustlers-calendar/internal/repository/users"
 )
 
 type UserRepository interface {
-	Create(context.Context, domain.User) (domain.User, error)
+	Create(context.Context, usersDomain.User) (usersDomain.User, error)
 }
 
 type userRepository struct {
@@ -30,9 +30,9 @@ RETURNING
 	id, login, name, created_at, updated_at
 `
 
-func (r *userRepository) Create(ctx context.Context, user domain.User) (domain.User, error) {
-	rUser := repo.FromDomain(user)
-	zero := repo.User{}
+func (r *userRepository) Create(ctx context.Context, user usersDomain.User) (usersDomain.User, error) {
+	rUser := usersRepo.FromDomain(user)
+	zero := usersRepo.User{}
 
 	row, err := r.db.QueryRow(ctx, userCreateSQL,
 		rUser.Login,
