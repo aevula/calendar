@@ -16,16 +16,19 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
-	app := application.New(cfg)
-	app.Init(ctx)
+	app := application.NewServer(cfg)
+
+	initCtx, inited := context.WithTimeout(context.Background(), cfg.Server.InitTimeout)
+	app.Init(initCtx)
+	inited()
 
 	select {
 	case <-app.Run(ctx):
 	case <-ctx.Done():
 	}
 
-	ctx, stop = signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+	ctx, stop = context.WithTimeout(context.Background(), cfg.Server.ShutTimeout)
 	defer stop()
 
-	app.Shutdown(ctx)
+	app.Stop(ctx)
 }

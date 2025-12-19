@@ -2,132 +2,98 @@ package application
 
 import (
 	"context"
-	"fmt"
-	"net/http"
-	"os"
 
 	"github.com/aevula/interview-hustlers-calendar/internal/config"
 	"github.com/aevula/interview-hustlers-calendar/internal/databases"
 	"github.com/aevula/interview-hustlers-calendar/internal/databases/postgres"
 	"github.com/aevula/interview-hustlers-calendar/internal/logging"
+	"github.com/aevula/interview-hustlers-calendar/internal/repository"
 )
 
-type App struct {
-	Cfg    config.Config
-	Logger *logging.Logger
-	Db     databases.Db
-	Server *http.Server
+type BaseApp interface {
+	Init(ctx context.Context)
+	Stop(ctx context.Context)
+
+	Cfg() config.Config
+	Logger() logging.Logger
+	DB() databases.DB
+
+	UsersRepo() repository.UserRepository
+	EventsRepo() repository.EventRepository
 }
 
-func New(cfg config.Config) *App {
-	return &App{Cfg: cfg}
+type app struct {
+	cfg    config.Config
+	logger logging.Logger
+	db     databases.DB
+
+	usersRepo  repository.UserRepository
+	eventsRepo repository.EventRepository
 }
 
-func (app *App) Init(ctx context.Context) {
-	initCtx, cancel := context.WithTimeout(ctx, app.Cfg.InitTimeout)
-	defer cancel()
-
-	app.initLogger(initCtx)
-	app.logIniting()
-
-	app.initDb(initCtx)
-	app.initServer(initCtx)
-
-	app.logInited()
+func new(cfg config.Config) BaseApp {
+	return &app{cfg: cfg}
 }
 
-func (app *App) Run(ctx context.Context) <-chan struct{} {
-	app.logStarting()
-	errCh := make(chan struct{})
+func (app *app) Init(ctx context.Context) {
+	app.initLogger()
 
-	go func() {
-		defer close(errCh)
+	app.initDb(ctx)
 
-		app.logStarted()
-		app.Logger.Sync()
-
-		if err := app.Server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			app.Logger.Error(err.Error())
-		}
-	}()
-
-	return errCh
+	app.initRepos()
 }
 
-func (app *App) Shutdown(ctx context.Context) {
-	defer app.Logger.Sync()
+func (app *app) Stop(ctx context.Context) {
+	defer app.logger.Sync()
 
-	shutCtx, cancel := context.WithTimeout(ctx, app.Cfg.ShutTimeout)
-	defer cancel()
-
-	app.logStoping()
-	defer app.logStoped()
-
-	app.closeDb(shutCtx)
-	app.closeServer(shutCtx)
+	app.closeDb(ctx)
 }
 
-func (app *App) initLogger(ctx context.Context) {
-	app.Logger = logging.MustLoad(app.Cfg)
+func (app *app) Cfg() config.Config {
+	return app.cfg
 }
 
-func (app *App) initDb(ctx context.Context) {
-	pg, err := postgres.New(ctx, app.Cfg)
+func (app *app) Logger() logging.Logger {
+	return app.logger
+}
+
+func (app *app) DB() databases.DB {
+	return app.db
+}
+
+func (app *app) UsersRepo() repository.UserRepository {
+	return app.usersRepo
+}
+
+func (app *app) EventsRepo() repository.EventRepository {
+	return app.eventsRepo
+}
+
+func (app *app) initLogger() {
+	app.logger = logging.MustLoad(app.cfg)
+}
+
+func (app *app) initDb(ctx context.Context) {
+	db, err := postgres.New(ctx, app.cfg)
 	if err != nil {
-		app.Logger.Fatal(err.Error())
+		app.logger.Fatal(err.Error())
 	}
 
-	app.Db = databases.Db(pg)
-}
-
-func (app *App) initServer(ctx context.Context) {
-	router := newRouter()
-
-	app.Server = &http.Server{
-		Addr:         fmt.Sprintf(":%d", app.Cfg.Server.Port),
-		Handler:      router,
-		ReadTimeout:  app.Cfg.Server.ReadTimeout,
-		WriteTimeout: app.Cfg.Server.WriteTimeout,
-		IdleTimeout:  app.Cfg.Server.IdleTimeout,
-		// ErrorLog:     app.Logger,
+	if err = db.Ping(ctx); err != nil {
+		app.logger.Fatal(err.Error())
 	}
+
+	app.db = db
 }
 
-func (app *App) closeDb(ctx context.Context) {
-	err := app.Db.Close(ctx)
+func (app *app) initRepos() {
+	app.usersRepo = repository.NewUserRepository(app.db)
+	app.eventsRepo = repository.NewEventRepository(app.db)
+}
+
+func (app *app) closeDb(ctx context.Context) {
+	err := app.db.Close(ctx)
 	if err != nil {
-		app.Logger.Error(err.Error())
+		app.logger.Error(err.Error())
 	}
-}
-
-func (app *App) closeServer(ctx context.Context) {
-	err := app.Server.Shutdown(ctx)
-	if err != nil {
-		app.Logger.Error(err.Error())
-	}
-}
-
-func (app *App) logIniting() {
-	app.Logger.Info(
-		"Starting ...",
-		app.Logger.Int("pid", os.Getpid()),
-		app.Logger.String("env", app.Cfg.Env),
-		app.Logger.String("log_level", app.Logger.Level().String()),
-	)
-}
-
-func (app *App) logInited() {}
-
-func (app *App) logStarting() {}
-
-func (app *App) logStarted() {
-	app.Logger.Info("Started", app.Logger.String("addr", app.Server.Addr))
-}
-
-func (app *App) logStoping() {
-	app.Logger.Info("Shutting down ...")
-}
-
-func (app *App) logStoped() {
-	app.Logger.Info("Shut down")
 }

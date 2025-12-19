@@ -1,12 +1,18 @@
 env: "dev"
-init_timeout: 5s
-shut_timeout: 5s
 
 server:
   port: 3000
   idle_timeout: 0s
   read_timeout: 0s
   write_timeout: 0s
+  init_timeout: 5s
+  shut_timeout: 5s
+
+scheduler:
+  workers_count: 1
+  refresh_rate: 5s
+  init_timeout: 5s
+  shut_timeout: 5s
 
 log:
   level: "debug"
@@ -16,6 +22,6 @@ log:
 db:
   user: pguser
   password: pgpassword
-  host: localhost
+  host: db
   port: 5432
   name: calendar_dev
