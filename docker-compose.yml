@@ -1,0 +1,37 @@
+services:
+  prod: &prod
+    build:
+      target: prod
+      context: ./
+      dockerfile: ./Dockerfile
+    command: ./server
+    ports:
+      - 3000:3000
+    depends_on:
+      - db
+    tty: true
+    stdin_open: true
+
+  app:
+    <<: *prod
+    build:
+      target: dev_builder
+    command: go run --race ./cmd/server.go
+    volumes:
+      - ./:/opt/app/
+    env_file:
+      - .env
+    
+  db:
+    image: postgres:18.0-alpine3.22
+    environment:
+      POSTGRES_USER: pguser
+      POSTGRES_PASSWORD: pgpassword
+    volumes:
+      - pgdata:/var/lib/postgresql/data/
+    ports:
+      - "5432:5432"
+    restart: always
+
+volumes:
+  pgdata:

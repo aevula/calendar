@@ -1,0 +1,21 @@
+env: "ci"
+init_timeout: 5s
+shut_timeout: 5s
+
+server:
+  port: 3000
+  idle_timeout: 0s
+  read_timeout: 0s
+  write_timeout: 0s
+
+log:
+  level: "info"
+  trace: true
+  plain: false
+
+db:
+  user: pguser
+  password: pgpassword
+  host: db
+  port: 5432
+  name: calendar_ci
