@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/aevula/interview-hustlers-calendar/internal/logging"
-	"github.com/aevula/interview-hustlers-calendar/internal/services/events"
+	eventsService "github.com/aevula/interview-hustlers-calendar/internal/services/events"
 )
 
 type EventsController interface {
@@ -15,10 +15,10 @@ type EventsController interface {
 }
 
 type eventsController struct {
-	service events.EventsService
+	service eventsService.EventsService
 	logger  logging.Logger
 }
 
-func NewEventsController(service events.EventsService, logger logging.Logger) EventsController {
+func NewEventsController(service eventsService.EventsService, logger logging.Logger) EventsController {
 	return &eventsController{service: service, logger: logger}
 }

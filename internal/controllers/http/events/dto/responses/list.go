@@ -3,7 +3,7 @@ package responses
 import (
 	"time"
 
-	domain "github.com/aevula/interview-hustlers-calendar/internal/domain/events"
+	eventsDomain "github.com/aevula/interview-hustlers-calendar/internal/domain/events"
 )
 
 type listEventResponse struct {
@@ -19,7 +19,7 @@ type listEventResponse struct {
 
 type ListEventsResponse = []listEventResponse
 
-func ToListEventsResponse(events []domain.Event) ListEventsResponse {
+func ToListEventsResponse(events []eventsDomain.Event) ListEventsResponse {
 	list := make([]listEventResponse, 0, len(events))
 	for i := range events {
 		var notified_at *time.Time

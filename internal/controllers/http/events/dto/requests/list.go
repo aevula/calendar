@@ -3,7 +3,7 @@ package requests
 import (
 	"time"
 
-	"github.com/aevula/interview-hustlers-calendar/internal/services/events"
+	eventsService "github.com/aevula/interview-hustlers-calendar/internal/services/events"
 )
 
 type ListEventsRequest struct {
@@ -15,9 +15,9 @@ type StartAtRange struct {
 	LTE time.Time `json:"lte"`
 }
 
-func (r ListEventsRequest) ToCommand() events.ListEventsCommand {
-	return events.ListEventsCommand{
-		StartAt: events.StartAtRange{
+func (r ListEventsRequest) ToCommand() eventsService.ListEventsCommand {
+	return eventsService.ListEventsCommand{
+		StartAt: eventsService.StartAtRange{
 			GTE: r.StartAt.GTE,
 			LTE: r.StartAt.LTE,
 		},

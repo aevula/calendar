@@ -3,7 +3,6 @@ package config
 import (
 	"log"
 	"os"
-	"time"
 
 	"github.com/ilyakaznacheev/cleanenv"
 )
@@ -18,8 +17,10 @@ const (
 type Config struct {
 	Env string `yaml:"env" env:"ENV"`
 
-	Server    Server    `yaml:"server"`
-	Scheduler Scheduler `yaml:"worker"`
+	Server   Server   `yaml:"server"`
+	Backjobs Backjobs `yaml:"worker"`
+	Consumer Consumer `yaml:"consumer"`
+	Queues   Queues   `yaml:"queues"`
 
 	Log Log `yaml:"log"`
 	DB  DB  `yaml:"db"`
@@ -39,39 +40,6 @@ func (cfg Config) IsCI() bool {
 
 func (cfg Config) IsProd() bool {
 	return cfg.Env == Prod
-}
-
-type Server struct {
-	Port int `yaml:"port"          env:"SERVER_PORT"`
-
-	IdleTimeout  time.Duration `yaml:"idle_timeout"  env:"SERVER_IDLE_TIMEOUT"`
-	ReadTimeout  time.Duration `yaml:"read_timeout"  env:"SERVER_READ_TIMEOUT"`
-	WriteTimeout time.Duration `yaml:"write_timeout" env:"SERVER_WRITE_TIMEOUT"`
-
-	InitTimeout time.Duration `yaml:"init_timeout" env:"SERVER_INIT_TIMEOUT"`
-	ShutTimeout time.Duration `yaml:"shut_timeout" env:"SERVER_SHUT_TIMEOUT"`
-}
-
-type Scheduler struct {
-	WorkersCount int           `yaml:"workers_count" env:"SCHEDULER_WORKERS_COUNT"`
-	RefreshRate  time.Duration `yaml:"refresh_rate"  env:"SCHEDULER_REFRESH_RATE"`
-
-	InitTimeout time.Duration `yaml:"init_timeout" env:"SCHEDULER_INIT_TIMEOUT"`
-	ShutTimeout time.Duration `yaml:"shut_timeout" env:"SCHEDULER_SHUT_TIMEOUT"`
-}
-
-type Log struct {
-	Level string `yaml:"level" env:"LOG_LEVEL"`
-	Trace bool   `yaml:"trace" env:"LOG_TRACE"`
-	Plain bool   `yaml:"plain" env:"LOG_PLAIN"`
-}
-
-type DB struct {
-	User     string `yaml:"user"     env:"DB_USER"`
-	Password string `yaml:"password" env:"DB_PASSWORD"`
-	Host     string `yaml:"host"     env:"DB_HOST"`
-	Port     int    `yaml:"port"     env:"DB_PORT"`
-	Name     string `yaml:"name"     env:"DB_NAME"`
 }
 
 func MustLoad() Config {

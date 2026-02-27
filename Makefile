@@ -24,8 +24,9 @@ help:
 	@echo "Available targets:"
 	@echo "  setup         -  full setup (docker, db, tools) (GOOSE_REBUILD=1 available)"
 	@echo "  server        -  run server locally (RACE=1 available)"
-	@echo "  scheduler     -  run scheduler locally (RACE=1 available)"
-	@echo "  run-docker    -  start server and scheduler via docker compose"
+	@echo "  backjobs      -  run backjobs locally (RACE=1 available)"
+	@echo "  consumer      -  run consumer locally (RACE=1 available)"
+	@echo "  up-docker     -  start server, backjobs, consumer via docker compose"
 	@echo "  setup-docker  -  build docker images"
 	@echo "  setup-db      -  create database if not exists"
 	@echo "  setup-goose   -  fetch and build custom goose binary (GOOSE_REBUILD=1 available)"
@@ -111,23 +112,34 @@ endif
 
 # === Run ===
 .PHONY: up-docker
-uprun-docker:
-	docker compose up -d app scheduler
+up-docker:
+	docker compose up -d app backjobs consumer
 
 .PHONY: server
 server:
+	docker compose up -d db
 ifeq ($(RACE),1)
 	go run -race ./cmd/server/server.go
 else
 	go run ./cmd/server/server.go
 endif
 
-.PHONY: scheduler
-scheduler:
+.PHONY: backjobs
+backjobs:
+	docker compose up -d db
 ifeq ($(RACE),1)
-	go run -race ./cmd/scheduler/scheduler.go
+	go run -race ./cmd/backjobs/backjobs.go
 else
-	go run ./cmd/scheduler/scheduler.go
+	go run ./cmd/backjobs/backjobs.go
+endif
+
+.PHONY: consumer
+consumer:
+	docker compose up -d db kafka
+ifeq ($(RACE),1)
+	go run -race ./cmd/consumer/consumer.go
+else
+	go run ./cmd/consumer/consumer.go
 endif
 
 # === Colors ===

@@ -40,9 +40,9 @@ func (db *DB) Close(ctx context.Context) error {
 	return db.conn.Close(ctx)
 }
 
-func (db *DB) QueryRow(ctx context.Context, sql string, args ...any) (databases.Row, error) {
-	row := db.conn.QueryRow(ctx, sql, args...)
-	return databases.Row(row), nil
+func (db *DB) Exec(ctx context.Context, sql string, args ...any) error {
+	_, err := db.conn.Exec(ctx, sql, args...)
+	return err
 }
 
 func (db *DB) Query(ctx context.Context, sql string, args ...any) (databases.Rows, error) {
@@ -50,7 +50,7 @@ func (db *DB) Query(ctx context.Context, sql string, args ...any) (databases.Row
 	return databases.Rows(rows), err
 }
 
-func (db *DB) Exec(ctx context.Context, sql string, args ...any) error {
-	_, err := db.conn.Exec(ctx, sql, args...)
-	return err
+func (db *DB) QueryRow(ctx context.Context, sql string, args ...any) (databases.Row, error) {
+	row := db.conn.QueryRow(ctx, sql, args...)
+	return databases.Row(row), nil
 }

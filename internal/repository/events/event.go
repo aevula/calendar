@@ -3,7 +3,7 @@ package events
 import (
 	"time"
 
-	domain "github.com/aevula/interview-hustlers-calendar/internal/domain/events"
+	eventsDomain "github.com/aevula/interview-hustlers-calendar/internal/domain/events"
 )
 
 type Event struct {
@@ -19,7 +19,7 @@ type Event struct {
 	UpdatedAt   time.Time
 }
 
-func FromDomain(event domain.Event) Event {
+func FromDomain(event eventsDomain.Event) Event {
 	var notified_at *time.Time
 	if !event.NotifiedAt.IsZero() {
 		notified_at = &event.NotifiedAt
@@ -39,17 +39,17 @@ func FromDomain(event domain.Event) Event {
 	}
 }
 
-func (event Event) ToDomain() domain.Event {
+func (event Event) ToDomain() eventsDomain.Event {
 	var notifiedAt time.Time
 	if event.NotifiedAt != nil {
 		notifiedAt = *event.NotifiedAt
 	}
 
-	return domain.Event{
-		ID:          domain.EventID(event.ID),
+	return eventsDomain.Event{
+		ID:          eventsDomain.EventID(event.ID),
 		Title:       event.Title,
 		Description: event.Description,
-		UserId:      domain.UserID(event.UserId),
+		UserId:      eventsDomain.UserID(event.UserId),
 		StartAt:     event.StartAt,
 		Duration:    event.Duration,
 		NotifyAt:    event.NotifyAt,

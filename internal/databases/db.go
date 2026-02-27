@@ -16,8 +16,9 @@ type Rows interface {
 }
 
 type DB interface {
+	Ping(ctx context.Context) error
+	Close(ctx context.Context) error
+	Exec(ctx context.Context, sql string, args ...any) error
 	Query(ctx context.Context, sql string, args ...any) (Rows, error)
 	QueryRow(ctx context.Context, sql string, args ...any) (Row, error)
-	Close(ctx context.Context) error
-	Ping(ctx context.Context) error
 }

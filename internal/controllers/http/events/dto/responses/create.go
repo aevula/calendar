@@ -3,7 +3,7 @@ package responses
 import (
 	"time"
 
-	domain "github.com/aevula/interview-hustlers-calendar/internal/domain/events"
+	eventsDomain "github.com/aevula/interview-hustlers-calendar/internal/domain/events"
 )
 
 type CreateEventResponse struct {
@@ -16,7 +16,7 @@ type CreateEventResponse struct {
 	NotifyAt    time.Time `json:"notify_at"`
 }
 
-func ToCreateEventResponse(event domain.Event) CreateEventResponse {
+func ToCreateEventResponse(event eventsDomain.Event) CreateEventResponse {
 	return CreateEventResponse{
 		ID:          int(event.ID),
 		Title:       event.Title,

@@ -1,7 +1,7 @@
 package responses
 
 import (
-	domain "github.com/aevula/interview-hustlers-calendar/internal/domain/users"
+	usersDomain "github.com/aevula/interview-hustlers-calendar/internal/domain/users"
 )
 
 type CreateUserResponse struct {
@@ -10,7 +10,7 @@ type CreateUserResponse struct {
 	Name  string `json:"name"`
 }
 
-func ToCreateUserResponse(user domain.User) CreateUserResponse {
+func ToCreateUserResponse(user usersDomain.User) CreateUserResponse {
 	return CreateUserResponse{
 		ID:    int(user.ID),
 		Login: user.Login,

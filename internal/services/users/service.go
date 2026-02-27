@@ -3,11 +3,11 @@ package users
 import (
 	"context"
 
-	domain "github.com/aevula/interview-hustlers-calendar/internal/domain/users"
+	usersDomain "github.com/aevula/interview-hustlers-calendar/internal/domain/users"
 )
 
 type UsersService interface {
-	Create(ctx context.Context, cmd CreateUserCommand) (domain.User, error)
+	Create(ctx context.Context, cmd CreateUserCommand) (usersDomain.User, error)
 }
 
 type usersService struct {
@@ -15,7 +15,7 @@ type usersService struct {
 }
 
 type UserRepository interface {
-	Create(context.Context, domain.User) (domain.User, error)
+	Create(context.Context, usersDomain.User) (usersDomain.User, error)
 }
 
 func NewUsersService(repo UserRepository) UsersService {

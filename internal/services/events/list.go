@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	domain "github.com/aevula/interview-hustlers-calendar/internal/domain/events"
+	eventsDomain "github.com/aevula/interview-hustlers-calendar/internal/domain/events"
 )
 
 type ListEventsCommand struct {
@@ -16,8 +16,8 @@ type StartAtRange struct {
 	LTE time.Time
 }
 
-func (s *eventsService) List(ctx context.Context, cmd ListEventsCommand) ([]domain.Event, error) {
-	filter := domain.StartAtFilter{
+func (s *eventsService) List(ctx context.Context, cmd ListEventsCommand) ([]eventsDomain.Event, error) {
+	filter := eventsDomain.StartAtFilter{
 		GTE: cmd.StartAt.GTE,
 		LTE: cmd.StartAt.LTE,
 	}
